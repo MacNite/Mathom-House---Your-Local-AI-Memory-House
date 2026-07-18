@@ -9,3 +9,4 @@ dist/
 data/
 .env
 *.db
+*.egg-info/
