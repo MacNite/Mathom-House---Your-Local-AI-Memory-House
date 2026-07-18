@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 
+import { useI18n } from '../lib/i18n';
 import type { MathomListItem } from '../lib/types';
 import StatusBadge from './StatusBadge';
 
@@ -12,6 +13,7 @@ export function formatDuration(seconds: number | null): string {
 }
 
 export default function MathomCard({ mathom }: { mathom: MathomListItem }) {
+  const { t } = useI18n();
   const date = new Date(mathom.created_at).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -22,7 +24,7 @@ export default function MathomCard({ mathom }: { mathom: MathomListItem }) {
       <div className="flex items-start justify-between gap-3">
         <h3 className="font-display text-lg text-ink-900">
           {mathom.favorite && (
-            <span aria-label="favorite" className="mr-1">
+            <span aria-label={t('card.favorite')} className="mr-1">
               ★
             </span>
           )}

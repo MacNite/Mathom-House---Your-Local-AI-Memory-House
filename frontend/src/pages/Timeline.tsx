@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { api } from '../lib/api';
+import { useI18n } from '../lib/i18n';
 import type { TimelineBucket } from '../lib/types';
 
 function monthLabel(month: string): string {
@@ -12,6 +13,7 @@ function monthLabel(month: string): string {
 }
 
 export default function Timeline() {
+  const { t } = useI18n();
   const [buckets, setBuckets] = useState<TimelineBucket[]>([]);
 
   useEffect(() => {
@@ -22,10 +24,10 @@ export default function Timeline() {
 
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink-900">Timeline</h2>
-      <p className="mt-1 text-sm text-ink-500">Your memory house, month by month.</p>
+      <h2 className="font-display text-2xl text-ink-900">{t('timeline.title')}</h2>
+      <p className="mt-1 text-sm text-ink-500">{t('timeline.subtitle')}</p>
       {buckets.length === 0 ? (
-        <p className="card mt-6 text-sm text-ink-500">Nothing recorded yet.</p>
+        <p className="card mt-6 text-sm text-ink-500">{t('timeline.empty')}</p>
       ) : (
         <ul className="mt-6 space-y-2">
           {buckets.map((bucket) => (

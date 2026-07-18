@@ -29,7 +29,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Generator[TestClient, None, None]
 
         from app.services import ollama, transcription
 
-        monkeypatch.setattr(ollama, "chat", lambda messages: "Mocked AI reply.")
+        monkeypatch.setattr(ollama, "chat", lambda messages, language=None: "Mocked AI reply.")
         monkeypatch.setattr(ollama, "is_reachable", lambda: False)
         monkeypatch.setattr(
             transcription, "transcribe", lambda path: ("This is a mocked transcript.", "en")

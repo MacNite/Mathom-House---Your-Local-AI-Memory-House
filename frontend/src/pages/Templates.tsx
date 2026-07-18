@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 
 import { api } from '../lib/api';
+import { useI18n } from '../lib/i18n';
 import type { PromptTemplate } from '../lib/types';
 
 export default function Templates() {
+  const { t } = useI18n();
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
   const [selected, setSelected] = useState<PromptTemplate | null>(null);
   const [draft, setDraft] = useState({ name: '', description: '', prompt: '' });
@@ -46,21 +48,21 @@ export default function Templates() {
         const created = await api.createTemplate({ slug: newSlug, ...draft });
         await refresh();
         select(created);
-        setMessage('Template created.');
+        setMessage(t('templates.created'));
       } else if (selected) {
         const updated = await api.updateTemplate(selected.id, draft);
         await refresh();
         select(updated);
-        setMessage('Saved.');
+        setMessage(t('templates.saved'));
       }
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : 'Saving failed');
+      setMessage(err instanceof Error ? err.message : t('templates.saveFailed'));
     }
   };
 
   const remove = async () => {
     if (!selected) return;
-    if (!window.confirm(`Delete template “${selected.name}”?`)) return;
+    if (!window.confirm(t('templates.confirmDelete', { name: selected.name }))) return;
     await api.deleteTemplate(selected.id);
     setSelected(null);
     await refresh();
@@ -69,15 +71,15 @@ export default function Templates() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-2xl text-ink-900">Prompt Templates</h2>
+        <h2 className="font-display text-2xl text-ink-900">{t('templates.title')}</h2>
         <button onClick={startCreate} className="btn-primary">
-          + New template
+          {t('templates.new')}
         </button>
       </div>
       <p className="mt-1 text-sm text-ink-500">
-        Templates shape how Mathom writes summaries. Use{' '}
-        <code className="rounded bg-parchment-200 px-1">{'{transcript}'}</code> where the
-        transcript should go.
+        {t('templates.helpBefore')}
+        <code className="rounded bg-parchment-200 px-1">{'{transcript}'}</code>
+        {t('templates.helpAfter')}
       </p>
 
       <div className="mt-6 grid gap-6 md:grid-cols-[240px,1fr]">
@@ -93,7 +95,9 @@ export default function Templates() {
                 }`}
               >
                 {template.name}
-                {template.is_builtin && <span className="ml-1 text-xs text-ink-400">· built-in</span>}
+                {template.is_builtin && (
+                  <span className="ml-1 text-xs text-ink-400">· {t('templates.builtin')}</span>
+                )}
               </button>
             </li>
           ))}
@@ -103,17 +107,17 @@ export default function Templates() {
           <div className="card">
             {creating && (
               <label className="block text-sm text-ink-700">
-                Slug
+                {t('templates.slug')}
                 <input
                   value={newSlug}
                   onChange={(event) => setNewSlug(event.target.value)}
-                  placeholder="my-template"
+                  placeholder={t('templates.slugPlaceholder')}
                   className="input mt-1"
                 />
               </label>
             )}
             <label className="mt-3 block text-sm text-ink-700">
-              Name
+              {t('templates.name')}
               <input
                 value={draft.name}
                 onChange={(event) => setDraft({ ...draft, name: event.target.value })}
@@ -121,7 +125,7 @@ export default function Templates() {
               />
             </label>
             <label className="mt-3 block text-sm text-ink-700">
-              Description
+              {t('templates.description')}
               <input
                 value={draft.description}
                 onChange={(event) => setDraft({ ...draft, description: event.target.value })}
@@ -129,7 +133,7 @@ export default function Templates() {
               />
             </label>
             <label className="mt-3 block text-sm text-ink-700">
-              Prompt
+              {t('templates.prompt')}
               <textarea
                 value={draft.prompt}
                 onChange={(event) => setDraft({ ...draft, prompt: event.target.value })}
@@ -142,11 +146,11 @@ export default function Templates() {
               <div className="flex gap-2">
                 {selected && (
                   <button onClick={remove} className="btn-ghost text-red-700">
-                    Delete
+                    {t('templates.delete')}
                   </button>
                 )}
                 <button onClick={save} className="btn-primary">
-                  {creating ? 'Create' : 'Save'}
+                  {creating ? t('templates.create') : t('templates.save')}
                 </button>
               </div>
             </div>

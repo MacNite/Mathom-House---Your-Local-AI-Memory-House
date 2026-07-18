@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { api } from '../lib/api';
+import { useI18n } from '../lib/i18n';
 import type { PromptTemplate } from '../lib/types';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function UploadDialog({ open, onClose, onUploaded }: Props) {
+  const { t } = useI18n();
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
   const [title, setTitle] = useState('');
   const [templateSlug, setTemplateSlug] = useState('general-summary');
@@ -30,7 +32,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
     event.preventDefault();
     const file = fileRef.current?.files?.[0];
     if (!file) {
-      setError('Choose an audio file first.');
+      setError(t('upload.chooseFileFirst'));
       return;
     }
     setBusy(true);
@@ -42,7 +44,7 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
       onUploaded();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      setError(err instanceof Error ? err.message : t('upload.uploadFailed'));
     } finally {
       setBusy(false);
     }
@@ -51,12 +53,10 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-900/40 p-4">
       <form onSubmit={submit} className="card w-full max-w-md bg-parchment-50">
-        <h2 className="font-display text-xl text-ink-900">Bring a recording home</h2>
-        <p className="mt-1 text-sm text-ink-500">
-          It will be transcribed and summarized, then shelved in your Mathom-house.
-        </p>
+        <h2 className="font-display text-xl text-ink-900">{t('upload.title')}</h2>
+        <p className="mt-1 text-sm text-ink-500">{t('upload.subtitle')}</p>
         <label className="mt-4 block text-sm text-ink-700">
-          Audio file
+          {t('upload.audioFile')}
           <input
             ref={fileRef}
             type="file"
@@ -65,16 +65,16 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
           />
         </label>
         <label className="mt-3 block text-sm text-ink-700">
-          Title <span className="text-ink-400">(optional)</span>
+          {t('upload.titleLabel')} <span className="text-ink-400">{t('upload.optional')}</span>
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="e.g. Call with the roofing company"
+            placeholder={t('upload.titlePlaceholder')}
             className="input mt-1"
           />
         </label>
         <label className="mt-3 block text-sm text-ink-700">
-          Summary style
+          {t('upload.summaryStyle')}
           <select
             value={templateSlug}
             onChange={(event) => setTemplateSlug(event.target.value)}
@@ -90,10 +90,10 @@ export default function UploadDialog({ open, onClose, onUploaded }: Props) {
         {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
         <div className="mt-5 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="btn-ghost">
-            Cancel
+            {t('upload.cancel')}
           </button>
           <button type="submit" disabled={busy} className="btn-primary disabled:opacity-50">
-            {busy ? 'Uploading…' : 'Upload'}
+            {busy ? t('upload.uploading') : t('upload.upload')}
           </button>
         </div>
       </form>

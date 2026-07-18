@@ -1,3 +1,4 @@
+import { useI18n } from '../lib/i18n';
 import type { MathomStatus } from '../lib/types';
 
 const STYLES: Record<MathomStatus, string> = {
@@ -8,18 +9,11 @@ const STYLES: Record<MathomStatus, string> = {
   error: 'bg-red-100 text-red-700',
 };
 
-const LABELS: Record<MathomStatus, string> = {
-  pending: 'Waiting',
-  transcribing: 'Transcribing…',
-  summarizing: 'Summarizing…',
-  ready: 'Ready',
-  error: 'Error',
-};
-
 export default function StatusBadge({ status }: { status: MathomStatus }) {
+  const { t } = useI18n();
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${STYLES[status]}`}>
-      {LABELS[status]}
+      {t(`status.${status}`)}
     </span>
   );
 }

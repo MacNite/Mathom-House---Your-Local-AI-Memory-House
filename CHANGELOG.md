@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Language-aware AI output: summaries and follow-up chat now answer in the
+  transcript's detected language instead of always English.
+- Multilingual frontend (English, German, Spanish) with an in-app language
+  switcher; the choice is remembered and defaults to the browser language.
 - Initial Mathom stack: FastAPI backend, React + Vite + Tailwind frontend,
   nginx proxy, Ollama and faster-whisper integration, SQLite storage.
 - Mathom-house archive: upload → transcribe → summarize pipeline with status

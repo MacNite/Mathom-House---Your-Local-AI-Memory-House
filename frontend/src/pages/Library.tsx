@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import MathomCard from '../components/MathomCard';
 import UploadDialog from '../components/UploadDialog';
 import { api } from '../lib/api';
+import { useI18n } from '../lib/i18n';
 import type { MathomListItem, SearchHit, Tag } from '../lib/types';
 
 type Shelf = 'all' | 'favorites' | 'archived';
@@ -22,6 +23,7 @@ export function renderSnippet(snippet: string) {
 }
 
 export default function Library() {
+  const { t } = useI18n();
   const [mathoms, setMathoms] = useState<MathomListItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -64,24 +66,24 @@ export default function Library() {
   }, [query]);
 
   const shelves: { key: Shelf; label: string }[] = [
-    { key: 'all', label: 'All' },
-    { key: 'favorites', label: '★ Favorites' },
-    { key: 'archived', label: 'Archived' },
+    { key: 'all', label: t('library.shelf.all') },
+    { key: 'favorites', label: t('library.shelf.favorites') },
+    { key: 'archived', label: t('library.shelf.archived') },
   ];
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-2xl text-ink-900">The Mathom-house</h2>
+        <h2 className="font-display text-2xl text-ink-900">{t('library.title')}</h2>
         <button onClick={() => setUploadOpen(true)} className="btn-primary">
-          + New Mathom
+          {t('library.newMathom')}
         </button>
       </div>
 
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="Search transcripts, summaries, titles…"
+        placeholder={t('library.searchPlaceholder')}
         className="input mt-4"
         type="search"
       />
@@ -120,7 +122,7 @@ export default function Library() {
       {hits !== null ? (
         <div className="mt-6 space-y-3">
           <p className="text-sm text-ink-500">
-            {hits.length} result{hits.length === 1 ? '' : 's'} for “{query}”
+            {t('library.results', { count: hits.length, query })}
           </p>
           {hits.map((hit) => (
             <div key={hit.mathom.id}>
@@ -131,10 +133,8 @@ export default function Library() {
         </div>
       ) : mathoms.length === 0 ? (
         <div className="card mt-8 text-center">
-          <p className="font-display text-lg text-ink-700">The shelves are empty — for now.</p>
-          <p className="mt-1 text-sm text-ink-500">
-            Upload your first recording and Mathom will remember it for you.
-          </p>
+          <p className="font-display text-lg text-ink-700">{t('library.emptyTitle')}</p>
+          <p className="mt-1 text-sm text-ink-500">{t('library.emptyBody')}</p>
         </div>
       ) : (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
