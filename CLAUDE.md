@@ -134,7 +134,7 @@ require an explicit migration script in `scripts/`.
 | `backend-ci.yml`         | PR + main          | ruff, mypy, pytest                      |
 | `frontend-ci.yml`        | PR + main          | eslint, tsc, vitest, vite build         |
 | `compose-validation.yml` | PR + main          | `docker compose config` for both stacks |
-| `docker-build.yml`       | PR + main          | build backend + frontend/proxy images   |
+| `docker-build.yml`       | PR + main          | build backend + proxy images; push to GHCR on `main` |
 | `security.yml`           | PR + main + weekly | pip-audit, npm audit, Trivy FS scan     |
 | `release-images.yml`     | tags `v*`          | build + push GHCR images                |
 
