@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def wait_for_status(
+def _wait_for_status(
     client: TestClient,
     mathom_id: int,
     *,
@@ -34,6 +34,17 @@ def wait_for_status(
             return detail
         time.sleep(0.05)
     raise AssertionError(f"Mathom {mathom_id} stuck in status {detail.get('status')!r}")
+
+
+@pytest.fixture()
+def wait_for_status():  # type: ignore[no-untyped-def]
+    """Expose the poll helper to tests as a fixture.
+
+    Bare ``pytest`` (as CI runs it) does not put the repo on ``sys.path``, so
+    ``from tests.conftest import ...`` is not importable — fixtures are the
+    portable way to share helpers.
+    """
+    return _wait_for_status
 
 
 @pytest.fixture()
@@ -174,4 +185,4 @@ def uploaded_mathom(client: TestClient) -> dict:
     assert response.status_code == 201, response.text
     mathom_id = response.json()["id"]
     # Processing now runs in the durable worker thread, so wait for it to land.
-    return wait_for_status(client, mathom_id)
+    return _wait_for_status(client, mathom_id)

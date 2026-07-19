@@ -7,7 +7,6 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 
 from app.services import oidc
-from tests.conftest import AuthHarness
 
 
 def _seg(data: dict) -> str:
@@ -25,7 +24,7 @@ def test_id_token_nonce_parsing() -> None:
     assert oidc.id_token_nonce("only.two") is None
 
 
-def _start_login(harness: AuthHarness, claims: dict) -> tuple[object, str, str]:
+def _start_login(harness, claims: dict) -> tuple[object, str, str]:  # noqa: ANN001
     client = harness.client()
     harness.claims.clear()
     harness.claims.update(claims)
@@ -34,9 +33,7 @@ def _start_login(harness: AuthHarness, claims: dict) -> tuple[object, str, str]:
     return client, query["state"][0], query["nonce"][0]
 
 
-def test_callback_rejects_mismatched_nonce(
-    auth_harness: AuthHarness, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_callback_rejects_mismatched_nonce(auth_harness, monkeypatch: pytest.MonkeyPatch) -> None:  # noqa: ANN001
     client, state, _nonce = _start_login(auth_harness, {"sub": "n1", "email": "n1@example.com"})
     monkeypatch.setattr(
         oidc,
@@ -47,9 +44,7 @@ def test_callback_rejects_mismatched_nonce(
     assert "auth_error=invalid_nonce" in done.headers["location"]
 
 
-def test_callback_accepts_matching_nonce(
-    auth_harness: AuthHarness, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_callback_accepts_matching_nonce(auth_harness, monkeypatch: pytest.MonkeyPatch) -> None:  # noqa: ANN001
     client, state, nonce = _start_login(auth_harness, {"sub": "n2", "email": "n2@example.com"})
     monkeypatch.setattr(
         oidc,

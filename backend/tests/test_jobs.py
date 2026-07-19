@@ -76,9 +76,7 @@ def test_recover_stuck_requeues_running_jobs(client: TestClient) -> None:
         assert session.get(Job, job_id).status == "queued"
 
 
-def test_upload_creates_and_finishes_a_job(client: TestClient) -> None:
-    from tests.conftest import wait_for_status
-
+def test_upload_creates_and_finishes_a_job(client: TestClient, wait_for_status) -> None:  # type: ignore[no-untyped-def]
     response = client.post(
         "/api/mathoms",
         files={"file": ("hello.mp3", io.BytesIO(b"fake-audio-bytes"), "audio/mpeg")},
