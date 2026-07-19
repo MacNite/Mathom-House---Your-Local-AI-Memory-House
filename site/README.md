@@ -11,11 +11,32 @@ theme). This keeps it in the spirit of the project: local-first and dependency-l
 ```
 site/
 ├── index.html      # the landing page
+├── demo.html       # interactive, static demo of the app (see below)
+├── demo.css        # demo styles (app-like sidebar + cards)
+├── demo.js         # demo runtime: seeded data, no backend, no network
 ├── 404.html        # friendly not-found page
 ├── styles.css      # warm archive palette (parchment / ink / hearth / moss)
 ├── assets/         # logo + icons copied from frontend/public/branding
 └── .nojekyll       # skip Jekyll processing on Pages
 ```
+
+## The demo (`demo.html`)
+
+A click-around, **fully client-side** reproduction of the real app — Library,
+Mathom detail (summaries, transcript, chat), Timeline, Templates, and
+Collections. It runs on seeded sample data held in memory, so:
+
+- **No backend, no network, no real transcription or LLM.** Summaries and chat
+  replies are canned but plausible, on a short simulated delay.
+- **Nothing persists.** Reload to reset to the seed data.
+- It exists to show the shape and feel of Mathom to someone who hasn't
+  installed it — not to process real recordings.
+
+Interactions that work: searching, shelf/tag filters, opening a Mathom,
+favoriting, archiving, deleting, editing the title, adding/removing tags,
+toggling collections, generating a summary from any template, asking follow-up
+questions, and a simulated "New Mathom" upload that walks through
+`pending → transcribing → summarizing → ready`.
 
 ## Preview locally
 
