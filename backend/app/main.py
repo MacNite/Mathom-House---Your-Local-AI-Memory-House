@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db import get_session_factory, init_db
+from app.ratelimit import RateLimitMiddleware
 from app.routers import (
     auth,
     chat,
@@ -40,6 +41,8 @@ app = FastAPI(
     version=health.VERSION,
     lifespan=lifespan,
 )
+
+app.add_middleware(RateLimitMiddleware)
 
 API_PREFIX = "/api"
 app.include_router(health.router, prefix=API_PREFIX)

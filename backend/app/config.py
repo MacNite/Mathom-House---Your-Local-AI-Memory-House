@@ -23,6 +23,16 @@ class Settings(BaseSettings):
     max_upload_mb: int = 200
     allowed_audio_extensions: str = ".mp3,.m4a,.wav,.ogg,.opus,.flac,.webm,.mp4,.aac"
 
+    # --- Rate limiting ---------------------------------------------------------
+    # In-process, per-client fixed-window limiter. Protects the box from runaway
+    # clients and brute-forcing the login. Disable only behind another limiter.
+    rate_limit_enabled: bool = True
+    # Budget for cheap reads (GET) per client per minute.
+    rate_limit_per_minute: int = 120
+    # Tighter budget for expensive work: uploads, chat, summaries, search, and
+    # any auth/login attempt.
+    rate_limit_heavy_per_minute: int = 20
+
     # --- Optional user management + Authentik SSO ------------------------------
     # All auth is OFF by default: the stack behaves as a single-user local
     # archive unless MATHOM_AUTH_ENABLED is explicitly set to true.

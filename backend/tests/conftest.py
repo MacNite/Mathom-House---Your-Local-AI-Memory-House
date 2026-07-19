@@ -20,6 +20,9 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Generator[TestClient, None, None]
     with tempfile.TemporaryDirectory() as tmp:
         os.environ["MATHOM_DATA_DIR"] = tmp
         os.environ["MATHOM_TEMPLATES_DIR"] = str(REPO_ROOT / "prompt-templates")
+        # The limiter is exercised in test_ratelimit.py; keep it out of the way
+        # of suites that fire many requests in one window.
+        os.environ["MATHOM_RATE_LIMIT_ENABLED"] = "false"
 
         # Reset module-level singletons so each test gets a fresh database.
         import app.config as config
@@ -88,6 +91,7 @@ def auth_harness(monkeypatch: pytest.MonkeyPatch) -> Generator[AuthHarness, None
     with tempfile.TemporaryDirectory() as tmp:
         os.environ["MATHOM_DATA_DIR"] = tmp
         os.environ["MATHOM_TEMPLATES_DIR"] = str(REPO_ROOT / "prompt-templates")
+        os.environ["MATHOM_RATE_LIMIT_ENABLED"] = "false"
         os.environ.update(_AUTH_ENV)
 
         import app.config as config
