@@ -49,6 +49,26 @@ does not resurrect it (seeding is insert-only).
 | `GET /timeline`      | Mathom counts bucketed by month                    |
 | `GET /health`        | Status, version, Ollama reachability               |
 
+## Authentication (optional)
+
+Active only when `MATHOM_AUTH_ENABLED=true`; otherwise these behave as noted and
+all other endpoints are open. See [authentication.md](authentication.md).
+
+| Method & path              | Purpose                                                        |
+| -------------------------- | -------------------------------------------------------------- |
+| `GET /auth/status`         | Whether auth is enabled/configured and the current user (public) |
+| `GET /auth/login?next=`    | Redirect to Authentik to sign in                               |
+| `GET /auth/callback`       | OAuth redirect target; sets the session cookie                 |
+| `POST /auth/logout`        | End the current session                                        |
+| `GET /users`               | List users *(Admin/Owner)*                                     |
+| `PATCH /users/{id}`        | Change `role` *(Owner)* or `is_active` *(Admin for users)*     |
+| `DELETE /users/{id}`       | Remove a user *(Owner)*                                        |
+| `GET /settings/authentik`  | Read Authentik connection settings, secret masked *(Owner)*    |
+| `PUT /settings/authentik`  | Update Authentik connection settings *(Owner)*                 |
+
+When auth is enabled, all Mathom/chat/collection/search endpoints require a
+session cookie (`401` otherwise) and return only the caller's own rows.
+
 ## Status lifecycle
 
 `pending → transcribing → summarizing → ready`, or `error` (with

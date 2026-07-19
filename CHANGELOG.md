@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Optional user management with **Authentik single sign-on** (OAuth2/OIDC),
+  disabled by default so existing installs are unaffected. When enabled, each
+  person signs in through Authentik and gets a private per-user Mathom-house
+  (Mathoms, chats, tags, collections are scoped per user). Roles are
+  **Owner / Admin / User**; MFA/2FA is delegated to Authentik. The Owner can edit
+  the Authentik connection in the UI, and pre-existing recordings are claimed by
+  the Owner on first sign-in. Sessions use HttpOnly, SameSite=Lax, Secure
+  cookies. See [docs/authentication.md](docs/authentication.md).
 - Installable Progressive Web App with Android **Web Share Target** support:
   share a WhatsApp voice message (or any audio file) straight from the Android
   Share Sheet into your local Mathom-house. A service worker receives the file

@@ -67,8 +67,17 @@ docker compose -f compose.yaml up -d --build
 
 Schema changes are additive and applied automatically at backend startup.
 
+## Authentication
+
+By default Mathom runs as a single-user local archive with **no login**. For
+multi-user installs you can enable optional [Authentik](https://goauthentik.io/)
+single sign-on — see [authentication.md](authentication.md) for the full setup,
+roles, and environment variables.
+
 ## Exposure warning
 
-Mathom has **no built-in authentication**. Keep the proxy port on your LAN or
-behind a VPN / authenticating reverse proxy. Never port-forward it to the
-internet as-is. See [SECURITY.md](../SECURITY.md).
+With authentication **disabled** (the default), Mathom has no login. Keep the
+proxy port on your LAN or behind a VPN / authenticating reverse proxy, and never
+port-forward it to the internet as-is. If you need to expose it, enable
+[Authentik SSO](authentication.md) and always serve it over HTTPS
+(`SESSION_COOKIE_SECURE=true`). See [SECURITY.md](../SECURITY.md).

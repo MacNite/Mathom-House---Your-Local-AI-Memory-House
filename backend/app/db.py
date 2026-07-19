@@ -38,6 +38,40 @@ def get_engine() -> Engine:
     return _engine
 
 
+def _column_names(conn: object, table: str) -> set[str]:
+    rows = conn.execute(text(f"PRAGMA table_info({table})")).all()  # type: ignore[attr-defined]
+    return {row[1] for row in rows}
+
+
+def _add_user_id_column(conn: object, table: str) -> None:
+    """Add the nullable ownership column to a legacy table (additive)."""
+    if "user_id" not in _column_names(conn, table):
+        conn.execute(text(f"ALTER TABLE {table} ADD COLUMN user_id INTEGER"))  # type: ignore[attr-defined]
+        conn.execute(  # type: ignore[attr-defined]
+            text(f"CREATE INDEX IF NOT EXISTS ix_{table}_user_id ON {table}(user_id)")
+        )
+
+
+def _migrate_user_ownership(conn: object) -> None:
+    """Bring pre-auth databases up to the user-management schema. Additive."""
+    for table in ("mathoms", "tags", "collections"):
+        _add_user_id_column(conn, table)
+
+    # The legacy tags schema had a UNIQUE index on name; per-user tags need it
+    # scoped to (user_id, name) instead. Replace it if the old one is present.
+    index_rows = conn.execute(text("PRAGMA index_list(tags)")).all()  # type: ignore[attr-defined]
+    for _seq, name, unique, *_ in index_rows:
+        if name == "ix_tags_name" and unique:
+            conn.execute(text("DROP INDEX ix_tags_name"))  # type: ignore[attr-defined]
+    conn.execute(text("CREATE INDEX IF NOT EXISTS ix_tags_name ON tags(name)"))  # type: ignore[attr-defined]
+    conn.execute(  # type: ignore[attr-defined]
+        text("CREATE UNIQUE INDEX IF NOT EXISTS uq_tags_user_name ON tags(user_id, name)")
+    )
+    conn.execute(  # type: ignore[attr-defined]
+        text("CREATE INDEX IF NOT EXISTS ix_collections_name ON collections(name)")
+    )
+
+
 def init_db(engine: Engine | None = None) -> None:
     """Create tables and the FTS5 search index. Additive and idempotent."""
     engine = engine or get_engine()
@@ -49,6 +83,7 @@ def init_db(engine: Engine | None = None) -> None:
                 "title, transcript, summaries)"
             )
         )
+        _migrate_user_ownership(conn)
 
 
 def refresh_fts(session: Session, mathom_id: int) -> None:

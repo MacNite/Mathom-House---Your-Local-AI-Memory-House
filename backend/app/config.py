@@ -20,6 +20,31 @@ class Settings(BaseSettings):
     max_upload_mb: int = 200
     allowed_audio_extensions: str = ".mp3,.m4a,.wav,.ogg,.opus,.flac,.webm,.mp4,.aac"
 
+    # --- Optional user management + Authentik SSO ------------------------------
+    # All auth is OFF by default: the stack behaves as a single-user local
+    # archive unless MATHOM_AUTH_ENABLED is explicitly set to true.
+    auth_enabled: bool = False
+    session_cookie_name: str = "mathom_session"
+    session_ttl_hours: int = 720  # 30 days
+    session_cookie_secure: bool = True
+    # Public origin used to build the OAuth redirect URI, e.g.
+    # https://mathom.example.com. Falls back to the request origin when empty.
+    public_base_url: str = ""
+
+    # Authentik / OIDC connection defaults. These seed the database-backed
+    # settings on first run; the Owner can override them later in the UI.
+    authentik_issuer: str = ""  # e.g. https://auth.example.com/application/o/mathom/
+    authentik_client_id: str = ""
+    authentik_client_secret: str = ""
+    authentik_scopes: str = "openid profile email"
+    oidc_verify_ssl: bool = True
+    # Automatically provision a Mathom account the first time an Authentik user
+    # signs in. When false an Owner/Admin must pre-create the account.
+    auth_auto_create_users: bool = True
+    # Email address that becomes the Owner on first sign-in. When empty the very
+    # first user to sign in is made Owner.
+    auth_owner_email: str = ""
+
     @property
     def database_url(self) -> str:
         return f"sqlite:///{self.data_dir / 'mathom.db'}"
