@@ -67,6 +67,27 @@ Each upload becomes a Mathom and moves through
 transcript, summaries, chat, tags, metadata — is stored locally in SQLite and
 a persistent volume.
 
+## Security & privacy
+
+Mathom is local-first by design, and ships with safe defaults:
+
+- **No login by default → loopback-only.** With authentication off (the
+  default) the web UI binds to `127.0.0.1`, so a fresh install is reachable
+  only from the host. Set `MATHOM_BIND=0.0.0.0` for LAN access — only behind a
+  VPN / authenticating reverse proxy, or with SSO enabled.
+- **No telemetry, no cloud.** The only outbound calls are backend→Ollama on the
+  internal network, and backend→Authentik **when you enable SSO**. Ollama is
+  never published.
+- **Uploads are validated** by extension *and* content (`ffprobe`), size-capped,
+  and stored under server-generated names; FFmpeg runs sandboxed with fixed
+  arguments and timeouts.
+- **Rate limiting** protects uploads, chat, search, and the login surface.
+- **Optional Authentik SSO** adds per-user archives, RBAC, and MFA.
+
+Before exposing Mathom beyond your own machine, read the
+[deployment exposure warning](docs/deployment.md#exposure-warning) and the
+[threat model](docs/threat-model.md).
+
 ## Configuration
 
 All settings live in `.env` (see [`.env.example`](.env.example)):
@@ -84,6 +105,7 @@ All settings live in `.env` (see [`.env.example`](.env.example)):
 
 - [Architecture](docs/architecture.md)
 - [Deployment (including TrueNAS SCALE)](docs/deployment.md)
+- [Threat model](docs/threat-model.md)
 - [Authentication & user management (Authentik SSO)](docs/authentication.md)
 - [PWA & Android Share Target](docs/pwa.md)
 - [API overview](docs/api.md)

@@ -11,7 +11,11 @@ services:
     image: mathom-proxy:latest
     restart: unless-stopped
     ports:
-      - "${MATHOM_PORT:-8080}:8080"
+      # Bind to loopback by default. With auth disabled (the default) Mathom has
+      # no login, so it must not be reachable beyond the host out of the box.
+      # Set MATHOM_BIND=0.0.0.0 for LAN access — only behind a VPN/authenticating
+      # reverse proxy, or with Authentik SSO enabled. See docs/deployment.md.
+      - "${MATHOM_BIND:-127.0.0.1}:${MATHOM_PORT:-8080}:8080"
     depends_on:
       backend:
         condition: service_healthy
@@ -41,6 +45,7 @@ services:
       # Optional user management + Authentik SSO (disabled by default).
       MATHOM_AUTH_ENABLED: ${AUTH_ENABLED:-false}
       MATHOM_SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      MATHOM_SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-336}
       MATHOM_PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-}
       MATHOM_AUTH_OWNER_EMAIL: ${AUTH_OWNER_EMAIL:-}
       MATHOM_AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-}
@@ -63,7 +68,9 @@ services:
       start_period: 30s
 
   ollama:
-    image: ollama/ollama:latest
+    # Pinned for reproducible, auditable deployments. Bump deliberately;
+    # override with OLLAMA_IMAGE if you track a different release.
+    image: ${OLLAMA_IMAGE:-ollama/ollama:0.32.1}
     restart: unless-stopped
     # No ports: Ollama is only reachable on the internal network.
     volumes:

@@ -4,6 +4,7 @@ models, network, or FFmpeg."""
 import io
 import os
 import tempfile
+import time
 from collections.abc import Generator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -15,11 +16,45 @@ from fastapi.testclient import TestClient
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _wait_for_status(
+    client: TestClient,
+    mathom_id: int,
+    *,
+    among: tuple[str, ...] = ("ready", "error"),
+    timeout: float = 10.0,
+) -> dict:
+    """Poll a Mathom until the durable worker moves it into a terminal state."""
+    deadline = time.monotonic() + timeout
+    detail: dict = {}
+    while time.monotonic() < deadline:
+        response = client.get(f"/api/mathoms/{mathom_id}")
+        assert response.status_code == 200, response.text
+        detail = response.json()
+        if detail["status"] in among:
+            return detail
+        time.sleep(0.05)
+    raise AssertionError(f"Mathom {mathom_id} stuck in status {detail.get('status')!r}")
+
+
+@pytest.fixture()
+def wait_for_status():  # type: ignore[no-untyped-def]
+    """Expose the poll helper to tests as a fixture.
+
+    Bare ``pytest`` (as CI runs it) does not put the repo on ``sys.path``, so
+    ``from tests.conftest import ...`` is not importable — fixtures are the
+    portable way to share helpers.
+    """
+    return _wait_for_status
+
+
 @pytest.fixture()
 def client(monkeypatch: pytest.MonkeyPatch) -> Generator[TestClient, None, None]:
     with tempfile.TemporaryDirectory() as tmp:
         os.environ["MATHOM_DATA_DIR"] = tmp
         os.environ["MATHOM_TEMPLATES_DIR"] = str(REPO_ROOT / "prompt-templates")
+        # The limiter is exercised in test_ratelimit.py; keep it out of the way
+        # of suites that fire many requests in one window.
+        os.environ["MATHOM_RATE_LIMIT_ENABLED"] = "false"
 
         # Reset module-level singletons so each test gets a fresh database.
         import app.config as config
@@ -37,6 +72,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Generator[TestClient, None, None]
             transcription, "transcribe", lambda path: ("This is a mocked transcript.", "en")
         )
         monkeypatch.setattr(transcription, "probe_duration_seconds", lambda path: 12.5)
+        monkeypatch.setattr(transcription, "validate_audio", lambda path: None)
 
         from app.main import app
 
@@ -87,6 +123,7 @@ def auth_harness(monkeypatch: pytest.MonkeyPatch) -> Generator[AuthHarness, None
     with tempfile.TemporaryDirectory() as tmp:
         os.environ["MATHOM_DATA_DIR"] = tmp
         os.environ["MATHOM_TEMPLATES_DIR"] = str(REPO_ROOT / "prompt-templates")
+        os.environ["MATHOM_RATE_LIMIT_ENABLED"] = "false"
         os.environ.update(_AUTH_ENV)
 
         import app.config as config
@@ -104,6 +141,7 @@ def auth_harness(monkeypatch: pytest.MonkeyPatch) -> Generator[AuthHarness, None
             transcription, "transcribe", lambda path: ("This is a mocked transcript.", "en")
         )
         monkeypatch.setattr(transcription, "probe_duration_seconds", lambda path: 12.5)
+        monkeypatch.setattr(transcription, "validate_audio", lambda path: None)
 
         harness = AuthHarness(app=None)
 
@@ -146,6 +184,5 @@ def uploaded_mathom(client: TestClient) -> dict:
     )
     assert response.status_code == 201, response.text
     mathom_id = response.json()["id"]
-    detail = client.get(f"/api/mathoms/{mathom_id}")
-    assert detail.status_code == 200
-    return detail.json()
+    # Processing now runs in the durable worker thread, so wait for it to land.
+    return _wait_for_status(client, mathom_id)

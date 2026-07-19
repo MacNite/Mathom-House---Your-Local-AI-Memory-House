@@ -21,22 +21,29 @@
   long timeouts (transcription can be slow) and a large `client_max_body_size`
   for uploads.
 - **backend** — FastAPI + SQLAlchemy 2.0 + SQLite. Owns all state. Runs
-  faster-whisper in-process (background tasks) and talks to Ollama over HTTP.
+  faster-whisper in-process via a **durable job queue** (a `jobs` table drained
+  by one worker thread) and talks to Ollama over HTTP.
 - **ollama** — serves the LLM. **No published ports** — reachable only on the
   internal Compose network.
 
 ## The Mathom lifecycle
 
-1. `POST /api/mathoms` stores the audio under a server-generated name and
-   creates a row with status `pending`.
-2. A FastAPI background task runs the pipeline
-   (`backend/app/services/pipeline.py`):
-   - `transcribing` — FFmpeg normalizes to 16 kHz mono WAV, ffprobe reads
-     the duration, faster-whisper produces transcript + language.
+1. `POST /api/mathoms` stores the audio under a server-generated name, creates
+   a row with status `pending`, and **enqueues a durable job** (`jobs` table).
+2. The worker thread (`backend/app/services/worker.py`) claims the job and runs
+   the pipeline (`backend/app/services/pipeline.py`):
+   - `transcribing` — the upload is validated with ffprobe (a real audio stream
+     is required), FFmpeg normalizes to 16 kHz mono WAV, ffprobe reads the
+     duration, faster-whisper produces transcript + language.
    - `summarizing` — the chosen prompt template is rendered
      (`{transcript}` placeholder) and sent to Ollama.
-   - `ready` — or `error`, with the message stored on the row.
-3. The frontend polls while a Mathom is in flight and renders live status.
+   - `ready` — or `error`, with a safe, generic message stored on the row.
+3. On failure the job is retried with exponential backoff up to `max_attempts`;
+   the Mathom is only marked `error` once retries are exhausted.
+4. **Restart recovery:** at startup any job left `running` is requeued, and any
+   Mathom in an in-flight status that no live job owns is flipped to a retryable
+   `error`. Nothing is lost or stuck when the container restarts.
+5. The frontend polls while a Mathom is in flight and renders live status.
 
 ## Data model
 
@@ -45,6 +52,7 @@ SQLite tables (SQLAlchemy models in `backend/app/models.py`):
 | Table                | Purpose                                       |
 | -------------------- | --------------------------------------------- |
 | `mathoms`            | One row per recording: audio path, transcript, status, flags |
+| `jobs`               | Durable background work queue (one row per pipeline run) |
 | `summaries`          | AI outputs, one per (mathom, template run)    |
 | `chat_messages`      | Follow-up conversation per mathom             |
 | `tags`, `mathom_tags`| Free-form labels                              |

@@ -6,6 +6,40 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- **OIDC nonce binding.** The login is now bound to the ID token's `nonce`, so a
+  replayed or injected token is rejected (`auth_error=invalid_nonce`).
+- **Shorter default session lifetime** — 14 days instead of 30
+  (`SESSION_TTL_HOURS`).
+- **Content-Security-Policy and HSTS** headers at the proxy; the self-contained
+  frontend is locked to `'self'`.
+- **CycloneDX SBOM** generated and archived in CI (`security.yml`).
+- **Loopback bind by default.** With authentication off (the default) the web UI
+  now publishes on `127.0.0.1`; opt into LAN exposure with `MATHOM_BIND=0.0.0.0`.
+- **Per-client rate limiting** on uploads, chat, summaries, search, and the
+  login surface (in-process, no external store).
+- **Content-based upload validation** with `ffprobe` (not just the extension),
+  plus bounded FFmpeg execution (`-nostdin`, thread cap, timeout).
+- **Safe user-facing errors** — pipeline failures no longer echo raw exception
+  text (which could leak paths or upstream bodies); details are logged only.
+- Pinned the Ollama image instead of tracking `latest`.
+
+### Reliability
+
+- **Durable background jobs**: replaced in-process `BackgroundTasks` with a
+  `jobs` table drained by a single worker thread. Processing now survives a
+  restart, failed runs retry with exponential backoff, and interrupted jobs are
+  requeued (or the Mathom is flipped to a retryable `error`) at startup instead
+  of hanging forever. The upload API is unchanged.
+- SQLite `busy_timeout` so worker and request threads no longer race to a
+  "database is locked" error.
+
+### Documentation
+
+- Added a [threat model](docs/threat-model.md); expanded backup and added
+  disaster-recovery/restore guidance; documented the new secure defaults.
+
 ### Added
 
 - Optional user management with **Authentik single sign-on** (OAuth2/OIDC),

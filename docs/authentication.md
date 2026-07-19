@@ -69,6 +69,7 @@ become the Owner.
 | `AUTH_ENABLED`             | `false`               | Master switch for user management + SSO.                       |
 | `PUBLIC_BASE_URL`          | *(request origin)*    | Public origin, used to build the OAuth redirect URI.           |
 | `SESSION_COOKIE_SECURE`    | `true`                | Send the session cookie only over HTTPS.                       |
+| `SESSION_TTL_HOURS`        | `336` (14 days)       | Absolute session lifetime before re-login is required.         |
 | `AUTH_OWNER_EMAIL`         | *(empty)*             | Email that becomes Owner; empty = first sign-in wins.          |
 | `AUTHENTIK_ISSUER`         | *(empty)*             | OIDC provider/issuer URL.                                      |
 | `AUTHENTIK_CLIENT_ID`      | *(empty)*             | OAuth client id.                                               |

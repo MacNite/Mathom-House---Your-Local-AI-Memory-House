@@ -5,7 +5,6 @@ from pathlib import Path
 
 from fastapi import (
     APIRouter,
-    BackgroundTasks,
     Depends,
     Form,
     HTTPException,
@@ -29,7 +28,8 @@ from app.schemas import (
     TagCreate,
     TagOut,
 )
-from app.services import export, pipeline
+from app.services import export, jobs, pipeline
+from app.services.worker import worker
 
 router = APIRouter(prefix="/mathoms", tags=["mathoms"])
 
@@ -68,7 +68,6 @@ def list_mathoms(
 
 @router.post("", response_model=MathomOut, status_code=201)
 async def upload_mathom(
-    background: BackgroundTasks,
     file: UploadFile,
     title: str = Form(default=""),
     template_slug: str = Form(default="general-summary"),
@@ -116,7 +115,9 @@ async def upload_mathom(
     db.add(mathom)
     db.commit()
     db.refresh(mathom)
-    background.add_task(pipeline.process_mathom, mathom.id, template_slug)
+    # Durable: the job survives a restart and is picked up by the worker.
+    jobs.enqueue(db, mathom.id, template_slug)
+    worker.notify()
     return mathom
 
 

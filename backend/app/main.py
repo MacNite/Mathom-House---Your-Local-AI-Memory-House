@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db import get_session_factory, init_db
+from app.ratelimit import RateLimitMiddleware
 from app.routers import (
     auth,
     chat,
@@ -19,6 +20,8 @@ from app.routers import (
     users,
 )
 from app.seed import seed_templates
+from app.services import jobs, pipeline
+from app.services.worker import worker
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
@@ -28,7 +31,15 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     init_db()
     with get_session_factory()() as session:
         seed_templates(session)
-    yield
+    # Resume work interrupted by a previous restart: requeue jobs left running,
+    # then flip any Mathom no live job still owns to a retryable error.
+    jobs.recover_stuck()
+    pipeline.recover_interrupted_jobs()
+    worker.start()
+    try:
+        yield
+    finally:
+        worker.stop()
 
 
 app = FastAPI(
@@ -37,6 +48,8 @@ app = FastAPI(
     version=health.VERSION,
     lifespan=lifespan,
 )
+
+app.add_middleware(RateLimitMiddleware)
 
 API_PREFIX = "/api"
 app.include_router(health.router, prefix=API_PREFIX)
