@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mathom — Your Local AI Memory House</title>
+    <meta
+      name="description"
+      content="Mathom is a fully local, self-hosted AI memory house. Transcribe voice recordings with faster-whisper, summarize them with Ollama, and shelve every recording in a searchable archive that never leaves your own server."
+    />
+    <link rel="canonical" href="https://macnite.github.io/Mathom-House---Your-Local-AI-Memory-House/" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" href="./assets/favicon-192.png" />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+    <meta name="theme-color" content="#b45f21" />
+
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mathom — Your Local AI Memory House" />
+    <meta
+      property="og:description"
+      content="Transcribe, summarize, and rediscover your conversations — fully local, no cloud, no telemetry."
+    />
+    <meta property="og:image" content="./assets/logo-mark.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- ===================== Header ===================== -->
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="#top">
+          <img src="./assets/bag-icon.png" alt="Mathom bag logo" />
+          <span>Mathom</span>
+        </a>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#features">Features</a>
+          <a href="#how">How it works</a>
+          <a href="#privacy">Privacy</a>
+          <a href="#quickstart">Quick start</a>
+          <a href="./demo.html">Demo</a>
+          <a href="#docs">Docs</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn btn-ghost" href="./demo.html">Try the demo</a>
+          <a
+            class="btn btn-primary"
+            href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.2-3.08-.12-.3-.52-1.48.11-3.08 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.5 3.17-1.18 3.17-1.18.63 1.6.23 2.78.11 3.08.75.8 1.2 1.82 1.2 3.08 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.05.78 2.12v3.14c0 .31.2.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"
+              />
+            </svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===================== Hero ===================== -->
+    <a id="top"></a>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <span class="eyebrow">100% local · self-hosted · no cloud</span>
+          <h1>Your Local AI Memory House</h1>
+          <p class="lede">
+            Mathom listens, remembers, organizes, and helps you rediscover
+            conversations, meetings, and ideas. It transcribes voice recordings
+            with faster-whisper, summarizes them with Ollama, and shelves every
+            recording in a searchable archive — all on your own hardware.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="./demo.html">Try the live demo</a>
+            <a class="btn btn-ghost" href="#quickstart">Get started</a>
+            <a
+              class="btn btn-ghost"
+              href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House"
+              >View on GitHub</a
+            >
+          </div>
+          <p class="hero-note">
+            🔒 Your data never leaves your server — no telemetry, ever.
+          </p>
+        </div>
+        <div class="hero-art">
+          <img
+            src="./assets/logo-mark.png"
+            alt="Mathom — a tree over a hobbit-hole archive of shelved keepsakes"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== What is a Mathom ===================== -->
+    <section class="alt">
+      <div class="container section-head reveal">
+        <span class="eyebrow">The idea</span>
+        <h2>Everything worth keeping, shelved with care</h2>
+        <p>
+          In Tolkien's Shire, a <em>mathom</em> is anything you have no immediate
+          use for but are unwilling to throw away — kept safe in the
+          Mathom-house. Yours go here: audio, transcript, summaries, tags, and
+          follow-up chat, stored together as a single searchable keepsake.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== Features ===================== -->
+    <section id="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Features</span>
+          <h2>A real archive, not a junk drawer</h2>
+          <p>
+            Every capability runs on your own hardware. Bring a recording home
+            and Mathom does the rest.
+          </p>
+        </div>
+        <div class="card-grid">
+          <div class="card reveal">
+            <div class="icon">🎙️</div>
+            <h3>Voice transcription</h3>
+            <p>
+              faster-whisper handles any common audio format, with FFmpeg under
+              the hood. CPU by default, optional NVIDIA GPU acceleration.
+            </p>
+          </div>
+          <div class="card reveal">
+            <div class="icon">✨</div>
+            <h3>AI summaries</h3>
+            <p>
+              12 editable prompt templates — TL;DR, Meeting Minutes, Action
+              Items, Email Draft, and more — powered locally by Ollama.
+            </p>
+          </div>
+          <div class="card reveal">
+            <div class="icon">💬</div>
+            <h3>Follow-up chat</h3>
+            <p>
+              Ask questions about any recording, grounded in its transcript.
+              Every message is stored with its Mathom.
+            </p>
+          </div>
+          <div class="card reveal">
+            <div class="icon">🔍</div>
+            <h3>Full-text search</h3>
+            <p>
+              SQLite FTS5 across titles, transcripts, and summaries, with
+              highlighted snippets so you find the right memory fast.
+            </p>
+          </div>
+          <div class="card reveal">
+            <div class="icon">🏷️</div>
+            <h3>Tags &amp; collections</h3>
+            <p>
+              Favorites, collections, archive, and a timeline view keep your
+              growing shelves tidy and browsable.
+            </p>
+          </div>
+          <div class="card reveal">
+            <div class="icon">📤</div>
+            <h3>Exports</h3>
+            <p>
+              Take any Mathom with you as Markdown, plain text, or JSON. Your
+              memory house, your files.
+            </p>
+          </div>
+          <div class="card reveal">
+            <div class="icon">👥</div>
+            <h3>Optional SSO</h3>
+            <p>
+              Off by default. Enable Authentik single sign-on for private
+              per-user archives with roles and MFA.
+            </p>
+          </div>
+          <div class="card reveal">
+            <div class="icon">🐳</div>
+            <h3>One Compose stack</h3>
+            <p>
+              A single Docker Compose stack — CPU by default, optional GPU
+              overlay, and TrueNAS SCALE compatible.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== How it works ===================== -->
+    <section id="how" class="alt">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">How it works</span>
+          <h2>From recording to remembered</h2>
+          <p>
+            Each upload becomes a Mathom and moves through four stages —
+            entirely on your machine.
+          </p>
+        </div>
+        <div class="flow reveal">
+          <div class="flow-step">
+            <div class="num">1</div>
+            <h3>Upload</h3>
+            <p>Drop in a voice recording. Audio is stored on a local volume.</p>
+          </div>
+          <div class="flow-step">
+            <div class="num">2</div>
+            <h3>Transcribe</h3>
+            <p>faster-whisper turns speech into an accurate transcript.</p>
+          </div>
+          <div class="flow-step">
+            <div class="num">3</div>
+            <h3>Summarize</h3>
+            <p>Ollama distills it using the prompt template you choose.</p>
+          </div>
+          <div class="flow-step">
+            <div class="num">4</div>
+            <h3>Shelve</h3>
+            <p>It joins your searchable Mathom-house, ready to rediscover.</p>
+          </div>
+        </div>
+
+        <div class="pipeline reveal" aria-label="Architecture pipeline">
+          <span class="node">Browser <strong>React UI</strong></span>
+          <span class="sep">→</span>
+          <span class="node">proxy <strong>nginx</strong></span>
+          <span class="sep">→</span>
+          <span class="node">backend <strong>FastAPI</strong></span>
+          <span class="sep">→</span>
+          <span class="node"><strong>Ollama</strong> (internal only)</span>
+          <span class="sep">+</span>
+          <span class="node"><strong>SQLite</strong> + audio volume</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== Templates ===================== -->
+    <section id="templates">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Prompt templates</span>
+          <h2>Summaries shaped for the moment</h2>
+          <p>
+            Twelve editable templates ship in the box — tweak them in the UI or
+            add your own. The database copy is always authoritative.
+          </p>
+        </div>
+        <div class="chips reveal">
+          <span class="chip">TL;DR</span>
+          <span class="chip">Meeting Minutes</span>
+          <span class="chip">Action Items</span>
+          <span class="chip">Email Draft</span>
+          <span class="chip">GitHub Issue</span>
+          <span class="chip">Jira Issue</span>
+          <span class="chip">CRM Entry</span>
+          <span class="chip">Calendar Events</span>
+          <span class="chip">Executive Brief</span>
+          <span class="chip">Key Decisions</span>
+          <span class="chip">Q&amp;A</span>
+          <span class="chip">Follow-ups</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== Privacy / Security ===================== -->
+    <section id="privacy" class="alt">
+      <div class="container split">
+        <div class="reveal">
+          <span class="eyebrow">Security &amp; privacy</span>
+          <h2 style="font-family: var(--font-display); font-size: clamp(1.8rem, 3.6vw, 2.4rem); margin: 0.7rem 0 0.4rem;">
+            Local-first, by design
+          </h2>
+          <p style="color: var(--ink-700);">
+            Mathom ships with safe defaults. The proxy is the only exposed
+            service, and Ollama is never published beyond the internal network.
+          </p>
+        </div>
+        <ul class="checks reveal">
+          <li>
+            <span class="tick">✓</span>
+            <span
+              ><strong>Loopback-only by default.</strong> With auth off, the UI
+              binds to 127.0.0.1 — reachable only from the host.</span
+            >
+          </li>
+          <li>
+            <span class="tick">✓</span>
+            <span
+              ><strong>No telemetry, no cloud.</strong> The only outbound calls
+              are backend → Ollama on the internal network.</span
+            >
+          </li>
+          <li>
+            <span class="tick">✓</span>
+            <span
+              ><strong>Validated uploads.</strong> Checked by extension and
+              content, size-capped, stored under server-generated names.</span
+            >
+          </li>
+          <li>
+            <span class="tick">✓</span>
+            <span
+              ><strong>Rate limiting.</strong> Protects uploads, chat, search,
+              and the login surface.</span
+            >
+          </li>
+          <li>
+            <span class="tick">✓</span>
+            <span
+              ><strong>Optional Authentik SSO.</strong> Per-user archives, RBAC,
+              and MFA when you want them.</span
+            >
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===================== Quick start ===================== -->
+    <section id="quickstart">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Quick start</span>
+          <h2>Bring your first recording home</h2>
+          <p>
+            Requirements: Docker with Compose v2. Optional: NVIDIA Container
+            Toolkit for GPU acceleration.
+          </p>
+        </div>
+        <div class="codeblock reveal">
+<code><span class="c"># Clone the repository</span>
+<span class="cmd">git</span> clone https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House.git
+<span class="cmd">cd</span> Mathom-House---Your-Local-AI-Memory-House
+
+<span class="c"># Configure — defaults work out of the box</span>
+<span class="cmd">cp</span> .env.example .env
+
+<span class="cmd">make</span> up        <span class="c"># start the CPU stack</span>
+<span class="cmd">make</span> models    <span class="c"># pull the Ollama model (first run only)</span>
+
+<span class="c"># Open the app</span>
+<span class="p">http://localhost:8080</span>
+</code>
+        </div>
+        <p style="text-align: center; color: var(--ink-500); margin-top: 1.25rem;">
+          GPU users: run <code style="background: var(--parchment-200); padding: 0.1rem 0.4rem; border-radius: 0.35rem;">make up-gpu</code> instead.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== CTA ===================== -->
+    <section id="docs" class="cta">
+      <div class="container reveal">
+        <span class="eyebrow">Documentation</span>
+        <h2>Read the docs, then make it yours</h2>
+        <p>
+          Architecture, deployment (including TrueNAS SCALE), the threat model,
+          authentication, and the API overview — all in the repository.
+        </p>
+        <div class="cta-actions">
+          <a
+            class="btn btn-primary"
+            href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House#documentation"
+            >Browse documentation</a
+          >
+          <a
+            class="btn btn-ghost"
+            href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House/blob/main/docs/deployment.md"
+            >Deployment guide</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== Footer ===================== -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <div class="footer-brand">
+              <img src="./assets/bag-icon.png" alt="Mathom bag logo" />
+              <span>Mathom</span>
+            </div>
+            <p>
+              Your Local AI Memory House. Warm, calm, private — a trusted local
+              archive for your conversations and memories.
+            </p>
+          </div>
+          <div class="footer-col">
+            <h4>Project</h4>
+            <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House">GitHub repository</a>
+            <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House/blob/main/docs/architecture.md">Architecture</a>
+            <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House/blob/main/docs/deployment.md">Deployment</a>
+            <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House/blob/main/CHANGELOG.md">Changelog</a>
+          </div>
+          <div class="footer-col">
+            <h4>Learn more</h4>
+            <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House/blob/main/docs/threat-model.md">Threat model</a>
+            <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House/blob/main/docs/authentication.md">Authentication</a>
+            <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House/blob/main/CONTRIBUTING.md">Contributing</a>
+            <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House/blob/main/SECURITY.md">Security policy</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>Released under the MIT License.</span>
+          <span>Built to run entirely on your own hardware. 🏠</span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Reveal-on-scroll — progressive enhancement only.
+      (function () {
+        var els = document.querySelectorAll('.reveal');
+        if (!('IntersectionObserver' in window)) {
+          els.forEach(function (el) { el.classList.add('in'); });
+          return;
+        }
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('in');
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
+        );
+        els.forEach(function (el) { io.observe(el); });
+      })();
+    </script>
+  </body>
+</html>

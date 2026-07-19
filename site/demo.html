@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mathom — Interactive Demo</title>
+    <meta
+      name="description"
+      content="A static, click-around demo of Mathom — Your Local AI Memory House. All data is fake and lives in your browser; no backend, no network."
+    />
+    <link rel="icon" type="image/png" href="./assets/favicon-192.png" />
+    <meta name="theme-color" content="#b45f21" />
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <div class="demo-banner">
+      <span>🧪 <strong>Demo mode</strong> — sample data, all in your browser. Nothing is uploaded or transcribed here.</span>
+      <a href="./index.html">← Back to site</a>
+      <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House">Run the real thing ↗</a>
+    </div>
+
+    <div class="app">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <img src="./assets/bag-icon.png" alt="Mathom logo" />
+          <div>
+            <h1>Mathom</h1>
+            <p>Your Local AI Memory House</p>
+          </div>
+        </div>
+        <nav class="nav" id="nav">
+          <a data-view="library" class="active"><span aria-hidden="true">📚</span> Library</a>
+          <a data-view="collections"><span aria-hidden="true">🗂️</span> Collections</a>
+          <a data-view="timeline"><span aria-hidden="true">🗓️</span> Timeline</a>
+          <a data-view="templates"><span aria-hidden="true">✒️</span> Templates</a>
+        </nav>
+        <div class="sidebar-foot">
+          <p>This is a guided sample of the app.</p>
+          <a href="https://github.com/MacNite/Mathom-House---Your-Local-AI-Memory-House">
+            <span aria-hidden="true">⭐</span> Star on GitHub
+          </a>
+        </div>
+      </aside>
+
+      <main class="main" id="main"><!-- rendered by demo.js --></main>
+    </div>
+
+    <div class="toast-wrap" id="toasts" aria-live="polite"></div>
+
+    <script src="./demo.js"></script>
+  </body>
+</html>
