@@ -2,8 +2,9 @@
 
 import logging
 from pathlib import Path
+from typing import Any, cast
 
-from sqlalchemy import select, update
+from sqlalchemy import CursorResult, select, update
 
 from app.config import get_settings
 from app.db import get_session_factory, refresh_fts
@@ -68,10 +69,13 @@ def recover_interrupted_jobs() -> int:
 
     with get_session_factory()() as session:
         active = select(Job.mathom_id).where(Job.status.in_(("queued", "running")))
-        result = session.execute(
-            update(Mathom)
-            .where(Mathom.status.in_(_IN_FLIGHT_STATUSES), Mathom.id.not_in(active))
-            .values(status="error", error_message=INTERRUPTED_MESSAGE)
+        result = cast(
+            "CursorResult[Any]",
+            session.execute(
+                update(Mathom)
+                .where(Mathom.status.in_(_IN_FLIGHT_STATUSES), Mathom.id.not_in(active))
+                .values(status="error", error_message=INTERRUPTED_MESSAGE)
+            ),
         )
         session.commit()
         count = int(result.rowcount or 0)

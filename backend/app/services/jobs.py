@@ -8,8 +8,9 @@ external broker, which keeps the local-first, one-stack design intact.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import Any, cast
 
-from sqlalchemy import select, update
+from sqlalchemy import CursorResult, select, update
 from sqlalchemy.orm import Session
 
 from app.db import get_session_factory
@@ -106,8 +107,13 @@ def recover_stuck() -> int:
     any job that reliably crashes the process.
     """
     with get_session_factory()() as session:
-        result = session.execute(
-            update(Job).where(Job.status == "running").values(status="queued", available_at=_now())
+        result = cast(
+            "CursorResult[Any]",
+            session.execute(
+                update(Job)
+                .where(Job.status == "running")
+                .values(status="queued", available_at=_now())
+            ),
         )
         session.commit()
         return int(result.rowcount or 0)
