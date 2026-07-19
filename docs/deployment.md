@@ -64,6 +64,48 @@ containing a consistent SQLite snapshot (via `sqlite3 .backup`) and the audio
 directory. On TrueNAS, periodic dataset snapshots of the data path work too —
 the database uses WAL mode, but the script's snapshot is the safest copy.
 
+What to protect:
+
+- `mathom.db` — all metadata, transcripts, summaries, chat, and (in SSO mode)
+  user accounts. **The database and the audio directory must be backed up
+  together**; a DB restored without its matching audio will reference missing
+  files, and vice versa.
+- The Ollama and whisper model volumes are **not** backup-critical — they are
+  re-pulled/re-downloaded on demand.
+
+Store backups off-host (another machine or encrypted object storage). The
+backup contains personal recordings, so treat it as sensitive: encrypt it at
+rest.
+
+## Disaster recovery (restore)
+
+To rebuild on a fresh host from a `backups/mathom-<timestamp>/` directory:
+
+```bash
+# 1. Bring the stack down so nothing is writing to the volume.
+docker compose -f compose.yaml down
+
+# 2. Restore the database and audio into the data volume.
+CONTAINER="$(docker compose -f compose.yaml run -d --no-deps backend sleep 300)"
+docker cp backups/mathom-<timestamp>/mathom.db "$CONTAINER:/data/mathom.db"
+docker cp backups/mathom-<timestamp>/audio "$CONTAINER:/data/audio"
+docker rm -f "$CONTAINER"
+
+# 3. Start normally. Additive migrations run automatically at startup.
+make up
+make models   # re-pull the model on the new host
+```
+
+On TrueNAS, restore by rolling the data dataset back to a snapshot (or copying
+`mathom.db` + `audio/` back into it) while the app is stopped.
+
+Recovery notes:
+
+- Any recording that was mid-processing when the backup was taken comes back as
+  `error` ("interrupted") and can be re-run — this is expected and safe.
+- Verify a restore periodically: bring the stack up against a copy of the backup
+  and confirm the library loads and a recording plays.
+
 ## Upgrades
 
 ```bash

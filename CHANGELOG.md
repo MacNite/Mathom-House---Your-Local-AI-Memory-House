@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- **Loopback bind by default.** With authentication off (the default) the web UI
+  now publishes on `127.0.0.1`; opt into LAN exposure with `MATHOM_BIND=0.0.0.0`.
+- **Per-client rate limiting** on uploads, chat, summaries, search, and the
+  login surface (in-process, no external store).
+- **Content-based upload validation** with `ffprobe` (not just the extension),
+  plus bounded FFmpeg execution (`-nostdin`, thread cap, timeout).
+- **Safe user-facing errors** — pipeline failures no longer echo raw exception
+  text (which could leak paths or upstream bodies); details are logged only.
+- Pinned the Ollama image instead of tracking `latest`.
+
+### Reliability
+
+- **Interrupted-job recovery**: recordings left mid-processing by a restart are
+  reset to a retryable `error` state at startup instead of hanging forever.
+- SQLite `busy_timeout` so worker and request threads no longer race to a
+  "database is locked" error.
+
+### Documentation
+
+- Added a [threat model](docs/threat-model.md); expanded backup and added
+  disaster-recovery/restore guidance; documented the new secure defaults.
+
 ### Added
 
 - Optional user management with **Authentik single sign-on** (OAuth2/OIDC),
