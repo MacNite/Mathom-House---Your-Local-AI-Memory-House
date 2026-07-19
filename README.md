@@ -80,6 +80,7 @@ All settings live in `.env` (see [`.env.example`](.env.example)):
 
 - [Architecture](docs/architecture.md)
 - [Deployment (including TrueNAS SCALE)](docs/deployment.md)
+- [PWA & Android Share Target](docs/pwa.md)
 - [API overview](docs/api.md)
 - [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) ·
   [Changelog](CHANGELOG.md)

@@ -115,6 +115,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'upload.cancel': 'Cancel',
     'upload.uploading': 'Uploading…',
     'upload.upload': 'Upload',
+    'upload.sharedSubtitle':
+      'Shared from another app. It will be transcribed and summarized, then shelved.',
+
+    'share.receiving': 'Receiving your recording…',
+    'share.emptyTitle': 'Nothing was shared.',
+    'share.emptyBody': 'Share an audio message to Mathom to bring it home.',
+    'share.backToLibrary': 'Back to the Library',
 
     'status.pending': 'Waiting',
     'status.transcribing': 'Transcribing…',
@@ -221,6 +228,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'upload.cancel': 'Abbrechen',
     'upload.uploading': 'Wird hochgeladen…',
     'upload.upload': 'Hochladen',
+    'upload.sharedSubtitle':
+      'Aus einer anderen App geteilt. Wird transkribiert, zusammengefasst und abgelegt.',
+
+    'share.receiving': 'Deine Aufnahme wird empfangen…',
+    'share.emptyTitle': 'Es wurde nichts geteilt.',
+    'share.emptyBody': 'Teile eine Audionachricht an Mathom, um sie nach Hause zu bringen.',
+    'share.backToLibrary': 'Zurück zur Bibliothek',
 
     'status.pending': 'Wartet',
     'status.transcribing': 'Transkribiert…',
@@ -326,6 +340,13 @@ const translations: Record<Lang, Record<string, string>> = {
     'upload.cancel': 'Cancelar',
     'upload.uploading': 'Subiendo…',
     'upload.upload': 'Subir',
+    'upload.sharedSubtitle':
+      'Compartido desde otra app. Se transcribirá, se resumirá y se guardará.',
+
+    'share.receiving': 'Recibiendo tu grabación…',
+    'share.emptyTitle': 'No se compartió nada.',
+    'share.emptyBody': 'Comparte un mensaje de audio con Mathom para traerlo a casa.',
+    'share.backToLibrary': 'Volver a la Biblioteca',
 
     'status.pending': 'En espera',
     'status.transcribing': 'Transcribiendo…',

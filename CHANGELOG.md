@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Installable Progressive Web App with Android **Web Share Target** support:
+  share a WhatsApp voice message (or any audio file) straight from the Android
+  Share Sheet into your local Mathom-house. A service worker receives the file
+  and the app opens the upload dialog pre-filled, so the flow is
+  *Share → Mathom → title/template → upload → transcribe → summarize*. Audio
+  goes from your device to your own server only — no third parties.
 - Language-aware AI output: summaries and follow-up chat now answer in the
   transcript's detected language instead of always English.
 - Multilingual frontend (English, German, Spanish) with an in-app language

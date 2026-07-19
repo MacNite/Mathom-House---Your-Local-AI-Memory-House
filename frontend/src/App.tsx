@@ -4,12 +4,15 @@ import Layout from './components/Layout';
 import Collections from './pages/Collections';
 import Library from './pages/Library';
 import MathomDetail from './pages/MathomDetail';
+import ShareTarget from './pages/ShareTarget';
 import Templates from './pages/Templates';
 import Timeline from './pages/Timeline';
 
 export default function App() {
   return (
     <Routes>
+      {/* Web Share Target landing — rendered without the app chrome. */}
+      <Route path="share-target" element={<ShareTarget />} />
       <Route element={<Layout />}>
         <Route index element={<Library />} />
         <Route path="mathoms/:id" element={<MathomDetail />} />
