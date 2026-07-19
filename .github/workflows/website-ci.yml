@@ -1,0 +1,30 @@
+name: Website CI
+
+on:
+  pull_request:
+    paths:
+      - 'website/**'
+      - 'scripts/build-website.mjs'
+      - 'package.json'
+      - '.github/workflows/website-*.yml'
+  push:
+    branches:
+      - main
+      - 'agent/**'
+    paths:
+      - 'website/**'
+      - 'scripts/build-website.mjs'
+      - 'package.json'
+      - '.github/workflows/website-*.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Validate and build website
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check
