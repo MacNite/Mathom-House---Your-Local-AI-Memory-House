@@ -20,7 +20,8 @@ from app.routers import (
     users,
 )
 from app.seed import seed_templates
-from app.services import pipeline
+from app.services import jobs, pipeline
+from app.services.worker import worker
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
@@ -30,9 +31,15 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     init_db()
     with get_session_factory()() as session:
         seed_templates(session)
-    # Any Mathom still "in flight" was interrupted by a previous restart.
+    # Resume work interrupted by a previous restart: requeue jobs left running,
+    # then flip any Mathom no live job still owns to a retryable error.
+    jobs.recover_stuck()
     pipeline.recover_interrupted_jobs()
-    yield
+    worker.start()
+    try:
+        yield
+    finally:
+        worker.stop()
 
 
 app = FastAPI(

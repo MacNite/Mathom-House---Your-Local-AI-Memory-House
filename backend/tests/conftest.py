@@ -4,6 +4,7 @@ models, network, or FFmpeg."""
 import io
 import os
 import tempfile
+import time
 from collections.abc import Generator
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -13,6 +14,26 @@ import pytest
 from fastapi.testclient import TestClient
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def wait_for_status(
+    client: TestClient,
+    mathom_id: int,
+    *,
+    among: tuple[str, ...] = ("ready", "error"),
+    timeout: float = 10.0,
+) -> dict:
+    """Poll a Mathom until the durable worker moves it into a terminal state."""
+    deadline = time.monotonic() + timeout
+    detail: dict = {}
+    while time.monotonic() < deadline:
+        response = client.get(f"/api/mathoms/{mathom_id}")
+        assert response.status_code == 200, response.text
+        detail = response.json()
+        if detail["status"] in among:
+            return detail
+        time.sleep(0.05)
+    raise AssertionError(f"Mathom {mathom_id} stuck in status {detail.get('status')!r}")
 
 
 @pytest.fixture()
@@ -152,6 +173,5 @@ def uploaded_mathom(client: TestClient) -> dict:
     )
     assert response.status_code == 201, response.text
     mathom_id = response.json()["id"]
-    detail = client.get(f"/api/mathoms/{mathom_id}")
-    assert detail.status_code == 200
-    return detail.json()
+    # Processing now runs in the durable worker thread, so wait for it to land.
+    return wait_for_status(client, mathom_id)

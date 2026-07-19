@@ -87,6 +87,36 @@ class Mathom(Base):
     )
 
 
+class Job(Base):
+    """A durable unit of background work for a Mathom.
+
+    Persisting the intent to process (instead of relying on in-process
+    ``BackgroundTasks``) means work survives a restart: a single worker thread
+    claims queued jobs, and anything left ``running`` by a crash is requeued.
+    """
+
+    __tablename__ = "jobs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    mathom_id: Mapped[int] = mapped_column(ForeignKey("mathoms.id", ondelete="CASCADE"), index=True)
+    kind: Mapped[str] = mapped_column(String(30), default="process")
+    template_slug: Mapped[str] = mapped_column(String(100), default="general-summary")
+    # queued → running → done | error
+    status: Mapped[str] = mapped_column(String(20), default="queued", index=True)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    max_attempts: Mapped[int] = mapped_column(Integer, default=3)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Earliest time this job may be claimed (used for retry backoff).
+    available_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
 class Summary(Base):
     """An AI output produced for a Mathom with a given prompt template."""
 

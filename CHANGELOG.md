@@ -20,8 +20,11 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Reliability
 
-- **Interrupted-job recovery**: recordings left mid-processing by a restart are
-  reset to a retryable `error` state at startup instead of hanging forever.
+- **Durable background jobs**: replaced in-process `BackgroundTasks` with a
+  `jobs` table drained by a single worker thread. Processing now survives a
+  restart, failed runs retry with exponential backoff, and interrupted jobs are
+  requeued (or the Mathom is flipped to a retryable `error`) at startup instead
+  of hanging forever. The upload API is unchanged.
 - SQLite `busy_timeout` so worker and request threads no longer race to a
   "database is locked" error.
 
