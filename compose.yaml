@@ -11,7 +11,11 @@ services:
     image: mathom-proxy:latest
     restart: unless-stopped
     ports:
-      - "${MATHOM_PORT:-8080}:8080"
+      # Bind to loopback by default. With auth disabled (the default) Mathom has
+      # no login, so it must not be reachable beyond the host out of the box.
+      # Set MATHOM_BIND=0.0.0.0 for LAN access — only behind a VPN/authenticating
+      # reverse proxy, or with Authentik SSO enabled. See docs/deployment.md.
+      - "${MATHOM_BIND:-127.0.0.1}:${MATHOM_PORT:-8080}:8080"
     depends_on:
       backend:
         condition: service_healthy

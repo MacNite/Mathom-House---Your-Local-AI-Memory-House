@@ -8,7 +8,13 @@ make up            # or: docker compose -f compose.yaml up -d --build
 make models        # pulls the Ollama model configured in .env
 ```
 
-The UI is served on `http://<host>:8080` (change with `MATHOM_PORT`).
+The UI is served on `http://localhost:8080` (change the port with
+`MATHOM_PORT`). By default the port is bound to **loopback only**
+(`MATHOM_BIND=127.0.0.1`), because with authentication off (the default) there
+is no login. To reach Mathom from other machines on your LAN, set
+`MATHOM_BIND=0.0.0.0` — but only behind a VPN or an authenticating reverse
+proxy, or with [Authentik SSO](authentication.md) enabled (see the exposure
+warning below).
 
 ### NVIDIA GPU
 
@@ -76,8 +82,11 @@ roles, and environment variables.
 
 ## Exposure warning
 
-With authentication **disabled** (the default), Mathom has no login. Keep the
-proxy port on your LAN or behind a VPN / authenticating reverse proxy, and never
-port-forward it to the internet as-is. If you need to expose it, enable
-[Authentik SSO](authentication.md) and always serve it over HTTPS
-(`SESSION_COOKIE_SECURE=true`). See [SECURITY.md](../SECURITY.md).
+With authentication **disabled** (the default), Mathom has no login. The
+published port therefore binds to `127.0.0.1` by default, so a fresh install is
+only reachable from the host. Widening that (`MATHOM_BIND=0.0.0.0`) puts an
+unauthenticated archive on your network — do it only behind a VPN /
+authenticating reverse proxy, and never port-forward it to the internet as-is.
+If you need to expose it, enable [Authentik SSO](authentication.md) and always
+serve it over HTTPS (`SESSION_COOKIE_SECURE=true`). See
+[SECURITY.md](../SECURITY.md) and the [threat model](threat-model.md).
