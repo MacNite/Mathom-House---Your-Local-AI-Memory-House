@@ -72,7 +72,9 @@ def summarize_mathom(mathom_id: int, template_slug: str) -> Summary | None:
             ).scalar_one_or_none()
         if template is None:
             return None
-        content = ollama.generate_summary(mathom.transcript, template.prompt)
+        content = ollama.generate_summary(
+            mathom.transcript, template.prompt, language=mathom.language
+        )
         summary = Summary(
             mathom_id=mathom_id,
             template_slug=template.slug,

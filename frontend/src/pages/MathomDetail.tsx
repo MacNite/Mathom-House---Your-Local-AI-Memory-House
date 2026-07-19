@@ -4,9 +4,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { formatDuration } from '../components/MathomCard';
 import StatusBadge from '../components/StatusBadge';
 import { api } from '../lib/api';
+import { useI18n } from '../lib/i18n';
 import type { Collection, Mathom, PromptTemplate } from '../lib/types';
 
 export default function MathomDetail() {
+  const { t } = useI18n();
   const { id } = useParams();
   const mathomId = Number(id);
   const navigate = useNavigate();
@@ -49,14 +51,14 @@ export default function MathomDetail() {
   if (notFound) {
     return (
       <div className="card">
-        <p>This Mathom is not on the shelves.</p>
+        <p>{t('detail.notFound')}</p>
         <Link to="/" className="text-hearth-600 underline">
-          Back to the Library
+          {t('detail.backToLibrary')}
         </Link>
       </div>
     );
   }
-  if (!mathom) return <p className="text-ink-500">Fetching from the shelves…</p>;
+  if (!mathom) return <p className="text-ink-500">{t('detail.fetching')}</p>;
 
   const patch = (changes: Parameters<typeof api.updateMathom>[1]) =>
     api.updateMathom(mathom.id, changes).then(setMathom);
@@ -93,7 +95,7 @@ export default function MathomDetail() {
   };
 
   const removeMathom = async () => {
-    if (!window.confirm('Remove this Mathom and its audio for good?')) return;
+    if (!window.confirm(t('detail.confirmDelete'))) return;
     await api.deleteMathom(mathom.id);
     navigate('/');
   };
@@ -102,7 +104,7 @@ export default function MathomDetail() {
     <div className="space-y-6">
       <div>
         <Link to="/" className="text-sm text-ink-500 hover:text-hearth-600">
-          ← Library
+          {t('detail.library')}
         </Link>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <input
@@ -119,15 +121,15 @@ export default function MathomDetail() {
             <button
               onClick={() => patch({ favorite: !mathom.favorite })}
               className="btn-ghost"
-              title="Toggle favorite"
+              title={t('detail.toggleFavorite')}
             >
-              {mathom.favorite ? '★ Favorited' : '☆ Favorite'}
+              {mathom.favorite ? t('detail.favorited') : t('detail.favorite')}
             </button>
             <button onClick={() => patch({ archived: !mathom.archived })} className="btn-ghost">
-              {mathom.archived ? 'Unarchive' : 'Archive'}
+              {mathom.archived ? t('detail.unarchive') : t('detail.archive')}
             </button>
             <button onClick={removeMathom} className="btn-ghost text-red-700">
-              Delete
+              {t('detail.delete')}
             </button>
           </div>
         </div>
@@ -139,7 +141,7 @@ export default function MathomDetail() {
         </p>
         {mathom.status === 'error' && (
           <p className="mt-2 rounded-xl bg-red-100 p-3 text-sm text-red-700">
-            {mathom.error_message ?? 'Something went wrong while processing this recording.'}
+            {mathom.error_message ?? t('detail.errorFallback')}
           </p>
         )}
       </div>
@@ -148,7 +150,7 @@ export default function MathomDetail() {
 
       <section className="card">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-lg">Tags & Collections</h3>
+          <h3 className="font-display text-lg">{t('detail.tagsCollections')}</h3>
           <div className="flex gap-2 text-sm">
             {(['md', 'txt', 'json'] as const).map((format) => (
               <a
@@ -157,7 +159,7 @@ export default function MathomDetail() {
                 className="text-hearth-600 underline"
                 download
               >
-                export .{format}
+                {t('detail.export', { format })}
               </a>
             ))}
           </div>
@@ -168,7 +170,7 @@ export default function MathomDetail() {
               key={tag.id}
               onClick={() => api.removeTag(mathom.id, tag.id).then(refresh)}
               className="chip hover:bg-red-100 hover:text-red-700"
-              title="Remove tag"
+              title={t('detail.removeTag')}
             >
               #{tag.name} ×
             </button>
@@ -177,7 +179,7 @@ export default function MathomDetail() {
             <input
               value={tagInput}
               onChange={(event) => setTagInput(event.target.value)}
-              placeholder="add tag ⏎"
+              placeholder={t('detail.addTag')}
               className="input w-32 py-1 text-xs"
             />
           </form>
@@ -205,16 +207,14 @@ export default function MathomDetail() {
             );
           })}
           {collections.length === 0 && (
-            <span className="text-ink-400">
-              No collections yet — create one on the Collections page.
-            </span>
+            <span className="text-ink-400">{t('detail.noCollections')}</span>
           )}
         </div>
       </section>
 
       <section className="card">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-lg">Summaries</h3>
+          <h3 className="font-display text-lg">{t('detail.summaries')}</h3>
           <div className="flex items-center gap-2">
             <select
               value={summarySlug}
@@ -232,12 +232,12 @@ export default function MathomDetail() {
               disabled={summaryBusy || !mathom.transcript}
               className="btn-primary disabled:opacity-50"
             >
-              {summaryBusy ? 'Thinking…' : 'Generate'}
+              {summaryBusy ? t('detail.thinking') : t('detail.generate')}
             </button>
           </div>
         </div>
         {mathom.summaries.length === 0 ? (
-          <p className="mt-3 text-sm text-ink-500">No summaries yet.</p>
+          <p className="mt-3 text-sm text-ink-500">{t('detail.noSummaries')}</p>
         ) : (
           <div className="mt-3 space-y-4">
             {mathom.summaries.map((summary) => (
@@ -253,27 +253,25 @@ export default function MathomDetail() {
       </section>
 
       <section className="card">
-        <h3 className="font-display text-lg">Transcript</h3>
+        <h3 className="font-display text-lg">{t('detail.transcript')}</h3>
         {mathom.transcript ? (
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink-700">
             {mathom.transcript}
           </p>
         ) : (
-          <p className="mt-3 text-sm text-ink-500">
-            The transcript will appear here once processing finishes.
-          </p>
+          <p className="mt-3 text-sm text-ink-500">{t('detail.transcriptPending')}</p>
         )}
       </section>
 
       <section className="card">
         <div className="flex items-center justify-between">
-          <h3 className="font-display text-lg">Ask about this recording</h3>
+          <h3 className="font-display text-lg">{t('detail.askTitle')}</h3>
           {mathom.chat_messages.length > 0 && (
             <button
               onClick={() => api.clearChat(mathom.id).then(refresh)}
               className="text-sm text-ink-500 hover:text-red-700"
             >
-              Clear conversation
+              {t('detail.clearConversation')}
             </button>
           )}
         </div>
@@ -296,11 +294,7 @@ export default function MathomDetail() {
           <input
             value={chatInput}
             onChange={(event) => setChatInput(event.target.value)}
-            placeholder={
-              mathom.transcript
-                ? 'e.g. What did we agree on?'
-                : 'Available once the transcript is ready'
-            }
+            placeholder={mathom.transcript ? t('detail.chatReady') : t('detail.chatWaiting')}
             disabled={!mathom.transcript || chatBusy}
             className="input"
           />
@@ -309,7 +303,7 @@ export default function MathomDetail() {
             disabled={!mathom.transcript || chatBusy}
             className="btn-primary disabled:opacity-50"
           >
-            {chatBusy ? '…' : 'Ask'}
+            {chatBusy ? '…' : t('detail.ask')}
           </button>
         </form>
       </section>

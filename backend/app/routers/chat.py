@@ -32,7 +32,9 @@ def send_message(
         raise HTTPException(status_code=409, detail="Mathom has no transcript yet")
 
     history = [{"role": m.role, "content": m.content} for m in mathom.chat_messages]
-    reply = ollama.followup_chat(mathom.transcript, history, payload.message)
+    reply = ollama.followup_chat(
+        mathom.transcript, history, payload.message, language=mathom.language
+    )
 
     db.add(ChatMessage(mathom_id=mathom.id, role="user", content=payload.message))
     db.add(ChatMessage(mathom_id=mathom.id, role="assistant", content=reply))

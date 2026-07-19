@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 
 import MathomCard from '../components/MathomCard';
 import { api } from '../lib/api';
+import { useI18n } from '../lib/i18n';
 import type { Collection } from '../lib/types';
 
 export default function Collections() {
+  const { t } = useI18n();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -26,34 +28,33 @@ export default function Collections() {
       setDescription('');
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create collection');
+      setError(err instanceof Error ? err.message : t('collections.createError'));
     }
   };
 
   const remove = async (collection: Collection) => {
-    if (!window.confirm(`Delete collection “${collection.name}”? Mathoms stay in the library.`))
-      return;
+    if (!window.confirm(t('collections.confirmDelete', { name: collection.name }))) return;
     await api.deleteCollection(collection.id);
     await refresh();
   };
 
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink-900">Collections</h2>
-      <p className="mt-1 text-sm text-ink-500">Shelves for related recordings.</p>
+      <h2 className="font-display text-2xl text-ink-900">{t('collections.title')}</h2>
+      <p className="mt-1 text-sm text-ink-500">{t('collections.subtitle')}</p>
 
       <form onSubmit={create} className="card mt-4 flex flex-wrap items-end gap-3">
         <label className="flex-1 text-sm text-ink-700">
-          Name
+          {t('collections.name')}
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="e.g. House renovation"
+            placeholder={t('collections.namePlaceholder')}
             className="input mt-1"
           />
         </label>
         <label className="flex-[2] text-sm text-ink-700">
-          Description
+          {t('collections.description')}
           <input
             value={description}
             onChange={(event) => setDescription(event.target.value)}
@@ -61,7 +62,7 @@ export default function Collections() {
           />
         </label>
         <button type="submit" className="btn-primary">
-          Create
+          {t('collections.create')}
         </button>
         {error && <p className="w-full text-sm text-red-700">{error}</p>}
       </form>
@@ -80,13 +81,11 @@ export default function Collections() {
                 onClick={() => remove(collection)}
                 className="text-sm text-ink-400 hover:text-red-700"
               >
-                Delete
+                {t('collections.delete')}
               </button>
             </div>
             {collection.mathoms.length === 0 ? (
-              <p className="mt-3 text-sm text-ink-400">
-                Empty — add Mathoms from their detail page.
-              </p>
+              <p className="mt-3 text-sm text-ink-400">{t('collections.empty')}</p>
             ) : (
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {collection.mathoms.map((mathom) => (
