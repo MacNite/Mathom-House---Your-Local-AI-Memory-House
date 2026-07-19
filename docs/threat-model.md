@@ -59,7 +59,9 @@ Internet / LAN ──▶ proxy (nginx, only exposed port) ──▶ backend (Fas
 - **Sensitive-data leakage in errors.** Pipeline failures surface a generic
   message; raw exception text is logged server-side only.
 - **Session theft basics.** Session tokens are opaque, server-side, HttpOnly,
-  `SameSite=Lax`, and `Secure` by default; OAuth uses a checked `state` token.
+  `SameSite=Lax`, and `Secure` by default, with a bounded lifetime (14 days by
+  default). OAuth uses a checked `state` token, and the login is bound to the
+  ID token's `nonce`.
 - **Secret disclosure.** The Authentik client secret is write-only over the API.
 
 ## Out of scope (operator's responsibility)
@@ -80,12 +82,13 @@ Internet / LAN ──▶ proxy (nginx, only exposed port) ──▶ backend (Fas
 
 ## Residual risks
 
-- The OAuth `nonce` is generated but not yet verified against an `id_token`
-  (identity is fetched from the userinfo back-channel with the access token; the
-  `state` check still prevents CSRF).
-- Processing uses in-process background tasks. Interrupted jobs are recovered to
-  a retryable error state on restart, but there is no durable queue or automatic
-  retry yet.
-- Session lifetime is long (30 days) with no idle expiry or rotation.
+- The ID token's signature is not cryptographically verified against Authentik's
+  JWKS. The token is only used for `nonce` binding — identity comes from the
+  userinfo back-channel — and it arrives over server-to-server TLS, so this is
+  defense-in-depth rather than a gap. Full JWKS verification is a future step.
+- Sessions have an absolute lifetime (14 days by default) but no idle expiry or
+  rotation; a stolen cookie is valid until it expires or the user logs out.
+- The single worker processes one recording at a time; a very long transcription
+  delays others in the queue (throughput, not correctness).
 
 See [SECURITY.md](../SECURITY.md) to report a vulnerability.

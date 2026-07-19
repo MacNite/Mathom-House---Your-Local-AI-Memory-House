@@ -7,6 +7,9 @@ with explicit timeouts.
 
 from __future__ import annotations
 
+import base64
+import binascii
+import json
 from typing import Any
 from urllib.parse import urlencode
 
@@ -89,6 +92,30 @@ def exchange_code(config: AuthentikConfig, *, code: str, redirect_uri: str) -> d
             return dict(response.json())
     except httpx.HTTPError as exc:
         raise OIDCError(f"Token exchange with Authentik failed: {exc}") from exc
+
+
+def id_token_nonce(id_token: str) -> str | None:
+    """Return the ``nonce`` claim from an ID token, or None if unavailable.
+
+    The token arrives directly from Authentik's token endpoint over a
+    server-to-server TLS back-channel (confidential client, authorization-code
+    flow), so its authenticity is assured by that channel. We read the payload
+    to bind the login to the nonce we issued, defeating token replay/injection;
+    identity itself still comes from the verified userinfo call.
+    """
+    if not id_token:
+        return None
+    parts = id_token.split(".")
+    if len(parts) != 3:
+        return None
+    payload = parts[1]
+    payload += "=" * (-len(payload) % 4)  # restore base64url padding
+    try:
+        claims = json.loads(base64.urlsafe_b64decode(payload))
+    except (binascii.Error, ValueError):
+        return None
+    nonce = claims.get("nonce")
+    return str(nonce) if nonce is not None else None
 
 
 def fetch_userinfo(config: AuthentikConfig, *, access_token: str) -> dict[str, Any]:

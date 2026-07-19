@@ -38,7 +38,10 @@ class Settings(BaseSettings):
     # archive unless MATHOM_AUTH_ENABLED is explicitly set to true.
     auth_enabled: bool = False
     session_cookie_name: str = "mathom_session"
-    session_ttl_hours: int = 720  # 30 days
+    # Absolute session lifetime. 14 days balances a friendly local-archive UX
+    # against exposure of a stolen cookie; Authentik re-auth is quick. Tune via
+    # MATHOM_SESSION_TTL_HOURS.
+    session_ttl_hours: int = 336  # 14 days
     session_cookie_secure: bool = True
     # Public origin used to build the OAuth redirect URI, e.g.
     # https://mathom.example.com. Falls back to the request origin when empty.

@@ -116,6 +116,15 @@ def callback(
         logger.warning("Authentik callback failed: %s", exc)
         return RedirectResponse("/?auth_error=exchange_failed", status_code=302)
 
+    # Bind the login to the nonce we issued. When Authentik returns an ID token
+    # (it does for the openid scope) a mismatch means a replayed/injected token,
+    # so reject it. If no nonce is present we fall back to the state check that
+    # already succeeded above.
+    token_nonce = oidc.id_token_nonce(tokens.get("id_token", ""))
+    if token_nonce is not None and token_nonce != stored_state.nonce:
+        logger.warning("Authentik callback rejected: nonce mismatch")
+        return RedirectResponse("/?auth_error=invalid_nonce", status_code=302)
+
     user = auth.upsert_user_from_claims(db, claims, auto_create=config.auto_create_users)
     if user is None:
         return RedirectResponse("/?auth_error=not_provisioned", status_code=302)
