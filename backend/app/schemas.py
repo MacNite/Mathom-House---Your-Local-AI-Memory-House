@@ -130,3 +130,53 @@ class HealthOut(BaseModel):
     status: str
     version: str
     ollama_reachable: bool
+
+
+# --- Auth / users / settings ------------------------------------------------
+
+
+class UserOut(ORMModel):
+    id: int
+    email: str
+    name: str
+    role: str
+    is_active: bool
+    created_at: datetime
+    last_login_at: datetime | None
+
+
+class AuthStatus(BaseModel):
+    """Everything the frontend needs to render the login state."""
+
+    auth_enabled: bool
+    configured: bool
+    authenticated: bool
+    login_url: str
+    user: UserOut | None = None
+
+
+class UserUpdate(BaseModel):
+    role: str | None = Field(default=None, pattern=r"^(owner|admin|user)$")
+    is_active: bool | None = None
+
+
+class AuthentikSettingsOut(BaseModel):
+    issuer: str
+    client_id: str
+    scopes: str
+    public_base_url: str
+    auto_create_users: bool
+    verify_ssl: bool
+    configured: bool
+    # The secret itself is never returned; the UI only learns whether one is set.
+    client_secret_set: bool
+
+
+class AuthentikSettingsUpdate(BaseModel):
+    issuer: str | None = None
+    client_id: str | None = None
+    client_secret: str | None = None
+    scopes: str | None = None
+    public_base_url: str | None = None
+    auto_create_users: bool | None = None
+    verify_ssl: bool | None = None

@@ -27,6 +27,10 @@ yours go here.*
 - 🏷️ **Tags, favorites, collections, archive, timeline** — a real archive, not
   a junk drawer
 - 📤 **Exports** — Markdown, plain text, or JSON per Mathom
+- 👥 **Optional multi-user + SSO** — off by default; enable
+  [Authentik](https://goauthentik.io/) single sign-on for private per-user
+  archives with Owner/Admin/User roles and Authentik-managed MFA
+  ([docs](docs/authentication.md))
 - 🏠 **Local-first** — no cloud, no telemetry; Ollama is never exposed
   publicly
 - 🐳 **One Docker Compose stack** — CPU by default, optional NVIDIA GPU
@@ -80,6 +84,7 @@ All settings live in `.env` (see [`.env.example`](.env.example)):
 
 - [Architecture](docs/architecture.md)
 - [Deployment (including TrueNAS SCALE)](docs/deployment.md)
+- [Authentication & user management (Authentik SSO)](docs/authentication.md)
 - [PWA & Android Share Target](docs/pwa.md)
 - [API overview](docs/api.md)
 - [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) ·

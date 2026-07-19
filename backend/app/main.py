@@ -7,7 +7,17 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db import get_session_factory, init_db
-from app.routers import chat, collections, health, mathoms, search, templates
+from app.routers import (
+    auth,
+    chat,
+    collections,
+    health,
+    mathoms,
+    search,
+    settings,
+    templates,
+    users,
+)
 from app.seed import seed_templates
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
@@ -30,6 +40,9 @@ app = FastAPI(
 
 API_PREFIX = "/api"
 app.include_router(health.router, prefix=API_PREFIX)
+app.include_router(auth.router, prefix=API_PREFIX)
+app.include_router(users.router, prefix=API_PREFIX)
+app.include_router(settings.router, prefix=API_PREFIX)
 app.include_router(mathoms.router, prefix=API_PREFIX)
 app.include_router(chat.router, prefix=API_PREFIX)
 app.include_router(templates.router, prefix=API_PREFIX)

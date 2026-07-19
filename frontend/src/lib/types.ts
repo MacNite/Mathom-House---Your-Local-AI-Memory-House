@@ -74,3 +74,44 @@ export interface TimelineBucket {
   month: string;
   count: number;
 }
+
+export type Role = 'owner' | 'admin' | 'user';
+
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  role: Role;
+  is_active: boolean;
+  created_at: string;
+  last_login_at: string | null;
+}
+
+export interface AuthStatus {
+  auth_enabled: boolean;
+  configured: boolean;
+  authenticated: boolean;
+  login_url: string;
+  user: User | null;
+}
+
+export interface AuthentikSettings {
+  issuer: string;
+  client_id: string;
+  scopes: string;
+  public_base_url: string;
+  auto_create_users: boolean;
+  verify_ssl: boolean;
+  configured: boolean;
+  client_secret_set: boolean;
+}
+
+export interface AuthentikSettingsUpdate {
+  issuer?: string;
+  client_id?: string;
+  client_secret?: string;
+  scopes?: string;
+  public_base_url?: string;
+  auto_create_users?: boolean;
+  verify_ssl?: boolean;
+}

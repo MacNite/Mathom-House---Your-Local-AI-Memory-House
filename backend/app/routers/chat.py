@@ -4,30 +4,38 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import ChatMessage, Mathom
+from app.deps import current_user, owns
+from app.models import ChatMessage, Mathom, User
 from app.schemas import ChatMessageOut, ChatRequest
 from app.services import ollama
 
 router = APIRouter(prefix="/mathoms/{mathom_id}/chat", tags=["chat"])
 
 
-def _get_mathom(mathom_id: int, db: Session) -> Mathom:
+def _get_mathom(mathom_id: int, db: Session, user: User | None) -> Mathom:
     mathom = db.get(Mathom, mathom_id)
-    if mathom is None:
+    if mathom is None or not owns(mathom, user):
         raise HTTPException(status_code=404, detail="Mathom not found")
     return mathom
 
 
 @router.get("", response_model=list[ChatMessageOut])
-def list_messages(mathom_id: int, db: Session = Depends(get_db)) -> list[ChatMessage]:
-    return _get_mathom(mathom_id, db).chat_messages
+def list_messages(
+    mathom_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> list[ChatMessage]:
+    return _get_mathom(mathom_id, db, user).chat_messages
 
 
 @router.post("", response_model=list[ChatMessageOut])
 def send_message(
-    mathom_id: int, payload: ChatRequest, db: Session = Depends(get_db)
+    mathom_id: int,
+    payload: ChatRequest,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
 ) -> list[ChatMessage]:
-    mathom = _get_mathom(mathom_id, db)
+    mathom = _get_mathom(mathom_id, db, user)
     if not mathom.transcript:
         raise HTTPException(status_code=409, detail="Mathom has no transcript yet")
 
@@ -44,8 +52,12 @@ def send_message(
 
 
 @router.delete("", status_code=204)
-def clear_chat(mathom_id: int, db: Session = Depends(get_db)) -> None:
-    mathom = _get_mathom(mathom_id, db)
+def clear_chat(
+    mathom_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> None:
+    mathom = _get_mathom(mathom_id, db, user)
     for message in list(mathom.chat_messages):
         db.delete(message)
     db.commit()

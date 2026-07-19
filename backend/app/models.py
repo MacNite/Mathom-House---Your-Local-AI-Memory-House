@@ -4,8 +4,26 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Table, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Table,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+# Roles, most privileged first. "owner" is unique (the archive keeper),
+# "admin" manages users, "user" owns only their own Mathoms.
+ROLE_OWNER = "owner"
+ROLE_ADMIN = "admin"
+ROLE_USER = "user"
+ROLES = (ROLE_OWNER, ROLE_ADMIN, ROLE_USER)
 
 
 def utcnow() -> datetime:
@@ -37,6 +55,11 @@ class Mathom(Base):
     __tablename__ = "mathoms"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # Owning user. NULL means "unowned" — the single-user / auth-disabled case,
+    # and rows that predate user management (claimed by the Owner on first login).
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True
+    )
     title: Mapped[str] = mapped_column(String(300), default="Untitled Mathom")
     original_filename: Mapped[str] = mapped_column(String(500), default="")
     audio_path: Mapped[str] = mapped_column(String(1000), default="")
@@ -94,18 +117,27 @@ class ChatMessage(Base):
 
 class Tag(Base):
     __tablename__ = "tags"
+    # Tag vocabulary is per-user: the same name may exist once per owner.
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_tags_user_name"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    name: Mapped[str] = mapped_column(String(100), index=True)
 
     mathoms: Mapped[list[Mathom]] = relationship(secondary=mathom_tags, back_populates="tags")
 
 
 class Collection(Base):
     __tablename__ = "collections"
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_collections_user_name"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(200), unique=True)
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), index=True)
     description: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
@@ -126,6 +158,64 @@ class PromptTemplate(Base):
     prompt: Mapped[str] = mapped_column(Text)  # must contain {transcript}
     is_builtin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
+class User(Base):
+    """A person who signs in through Authentik. Only used when auth is enabled."""
+
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # OIDC subject claim — the stable identifier from Authentik.
+    subject: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(200), default="")
+    role: Mapped[str] = mapped_column(String(20), default=ROLE_USER, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    sessions: Mapped[list[AuthSession]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+
+
+class AuthSession(Base):
+    """Server-side session; the opaque token lives in an HttpOnly cookie."""
+
+    __tablename__ = "auth_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    token: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+    user: Mapped[User] = relationship(back_populates="sessions")
+
+
+class OAuthState(Base):
+    """Short-lived CSRF/nonce state for an in-flight OAuth login."""
+
+    __tablename__ = "oauth_states"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    state: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    nonce: Mapped[str] = mapped_column(String(128), default="")
+    redirect_to: Mapped[str] = mapped_column(String(500), default="/")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AppSetting(Base):
+    """Owner-editable key/value settings (e.g. Authentik connection details)."""
+
+    __tablename__ = "app_settings"
+
+    key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    value: Mapped[str] = mapped_column(Text, default="")
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )

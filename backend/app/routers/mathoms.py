@@ -18,7 +18,8 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.db import get_db, refresh_fts
-from app.models import Mathom, Tag
+from app.deps import current_user, owned_filter, owns
+from app.models import Mathom, Tag, User
 from app.schemas import (
     MathomListItem,
     MathomOut,
@@ -35,9 +36,10 @@ router = APIRouter(prefix="/mathoms", tags=["mathoms"])
 CHUNK_SIZE = 1024 * 1024
 
 
-def _get_mathom(mathom_id: int, db: Session) -> Mathom:
+def _get_mathom(mathom_id: int, db: Session, user: User | None) -> Mathom:
     mathom = db.get(Mathom, mathom_id)
-    if mathom is None:
+    # Report not-owned rows as 404 so existence never leaks across users.
+    if mathom is None or not owns(mathom, user):
         raise HTTPException(status_code=404, detail="Mathom not found")
     return mathom
 
@@ -45,6 +47,7 @@ def _get_mathom(mathom_id: int, db: Session) -> Mathom:
 @router.get("", response_model=list[MathomListItem])
 def list_mathoms(
     db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
     favorite: bool | None = None,
     archived: bool = False,
     tag: str | None = None,
@@ -52,7 +55,7 @@ def list_mathoms(
     limit: int = 100,
     offset: int = 0,
 ) -> list[Mathom]:
-    query = select(Mathom).where(Mathom.archived == archived)
+    query = select(Mathom).where(Mathom.archived == archived, owned_filter(Mathom, user))
     if favorite is not None:
         query = query.where(Mathom.favorite == favorite)
     if status is not None:
@@ -70,6 +73,7 @@ async def upload_mathom(
     title: str = Form(default=""),
     template_slug: str = Form(default="general-summary"),
     db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
 ) -> Mathom:
     settings = get_settings()
     original_name = file.filename or "recording"
@@ -107,6 +111,7 @@ async def upload_mathom(
         original_filename=original_name[:500],
         audio_path=str(target),
         status="pending",
+        user_id=user.id if user else None,
     )
     db.add(mathom)
     db.commit()
@@ -116,13 +121,22 @@ async def upload_mathom(
 
 
 @router.get("/{mathom_id}", response_model=MathomOut)
-def get_mathom(mathom_id: int, db: Session = Depends(get_db)) -> Mathom:
-    return _get_mathom(mathom_id, db)
+def get_mathom(
+    mathom_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> Mathom:
+    return _get_mathom(mathom_id, db, user)
 
 
 @router.patch("/{mathom_id}", response_model=MathomOut)
-def update_mathom(mathom_id: int, payload: MathomUpdate, db: Session = Depends(get_db)) -> Mathom:
-    mathom = _get_mathom(mathom_id, db)
+def update_mathom(
+    mathom_id: int,
+    payload: MathomUpdate,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> Mathom:
+    mathom = _get_mathom(mathom_id, db, user)
     changed = payload.model_dump(exclude_unset=True)
     for field, value in changed.items():
         setattr(mathom, field, value)
@@ -135,8 +149,12 @@ def update_mathom(mathom_id: int, payload: MathomUpdate, db: Session = Depends(g
 
 
 @router.delete("/{mathom_id}", status_code=204)
-def delete_mathom(mathom_id: int, db: Session = Depends(get_db)) -> Response:
-    mathom = _get_mathom(mathom_id, db)
+def delete_mathom(
+    mathom_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> Response:
+    mathom = _get_mathom(mathom_id, db, user)
     audio_path = Path(mathom.audio_path) if mathom.audio_path else None
     db.delete(mathom)
     db.commit()
@@ -148,8 +166,12 @@ def delete_mathom(mathom_id: int, db: Session = Depends(get_db)) -> Response:
 
 
 @router.get("/{mathom_id}/audio")
-def get_audio(mathom_id: int, db: Session = Depends(get_db)) -> FileResponse:
-    mathom = _get_mathom(mathom_id, db)
+def get_audio(
+    mathom_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> FileResponse:
+    mathom = _get_mathom(mathom_id, db, user)
     path = Path(mathom.audio_path)
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Audio file not found")
@@ -158,9 +180,12 @@ def get_audio(mathom_id: int, db: Session = Depends(get_db)) -> FileResponse:
 
 @router.post("/{mathom_id}/summaries", response_model=SummaryOut, status_code=201)
 def create_summary(
-    mathom_id: int, payload: SummaryCreate, db: Session = Depends(get_db)
+    mathom_id: int,
+    payload: SummaryCreate,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
 ) -> SummaryOut:
-    mathom = _get_mathom(mathom_id, db)
+    mathom = _get_mathom(mathom_id, db, user)
     if not mathom.transcript:
         raise HTTPException(status_code=409, detail="Mathom has no transcript yet")
     summary = pipeline.summarize_mathom(mathom_id, payload.template_slug)
@@ -170,14 +195,21 @@ def create_summary(
 
 
 @router.post("/{mathom_id}/tags", response_model=list[TagOut])
-def add_tag(mathom_id: int, payload: TagCreate, db: Session = Depends(get_db)) -> list[Tag]:
-    mathom = _get_mathom(mathom_id, db)
+def add_tag(
+    mathom_id: int,
+    payload: TagCreate,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> list[Tag]:
+    mathom = _get_mathom(mathom_id, db, user)
     name = payload.name.strip().lower()
     if not name:
         raise HTTPException(status_code=400, detail="Tag name cannot be empty")
-    tag = db.execute(select(Tag).where(Tag.name == name)).scalar_one_or_none()
+    tag = db.execute(
+        select(Tag).where(Tag.name == name, owned_filter(Tag, user))
+    ).scalar_one_or_none()
     if tag is None:
-        tag = Tag(name=name)
+        tag = Tag(name=name, user_id=user.id if user else None)
         db.add(tag)
     if tag not in mathom.tags:
         mathom.tags.append(tag)
@@ -186,16 +218,26 @@ def add_tag(mathom_id: int, payload: TagCreate, db: Session = Depends(get_db)) -
 
 
 @router.delete("/{mathom_id}/tags/{tag_id}", response_model=list[TagOut])
-def remove_tag(mathom_id: int, tag_id: int, db: Session = Depends(get_db)) -> list[Tag]:
-    mathom = _get_mathom(mathom_id, db)
+def remove_tag(
+    mathom_id: int,
+    tag_id: int,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> list[Tag]:
+    mathom = _get_mathom(mathom_id, db, user)
     mathom.tags = [tag for tag in mathom.tags if tag.id != tag_id]
     db.commit()
     return mathom.tags
 
 
 @router.get("/{mathom_id}/export")
-def export_mathom(mathom_id: int, format: str = "md", db: Session = Depends(get_db)) -> Response:
-    mathom = _get_mathom(mathom_id, db)
+def export_mathom(
+    mathom_id: int,
+    format: str = "md",
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> Response:
+    mathom = _get_mathom(mathom_id, db, user)
     if format == "md":
         body, media_type, ext = export.to_markdown(mathom), "text/markdown", "md"
     elif format == "txt":

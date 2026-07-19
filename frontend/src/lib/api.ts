@@ -1,20 +1,26 @@
 // The only module that talks to the backend. Everything goes through /api.
 import type {
+  AuthentikSettings,
+  AuthentikSettingsUpdate,
+  AuthStatus,
   ChatMessage,
   Collection,
   Mathom,
   MathomListItem,
   PromptTemplate,
+  Role,
   SearchHit,
   Summary,
   Tag,
   TimelineBucket,
+  User,
 } from './types';
 
 const BASE = '/api';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${BASE}${path}`, init);
+  // `same-origin` sends the session cookie; the frontend and API share an origin.
+  const response = await fetch(`${BASE}${path}`, { credentials: 'same-origin', ...init });
   if (!response.ok) {
     let detail = response.statusText;
     try {
@@ -160,5 +166,35 @@ export const api = {
 
   timeline(): Promise<TimelineBucket[]> {
     return request('/timeline');
+  },
+
+  // --- Auth, users, and settings -------------------------------------------
+
+  authStatus(): Promise<AuthStatus> {
+    return request('/auth/status');
+  },
+
+  logout(): Promise<void> {
+    return request('/auth/logout', { method: 'POST' });
+  },
+
+  listUsers(): Promise<User[]> {
+    return request('/users');
+  },
+
+  updateUser(id: number, changes: { role?: Role; is_active?: boolean }): Promise<User> {
+    return request(`/users/${id}`, json('PATCH', changes));
+  },
+
+  deleteUser(id: number): Promise<void> {
+    return request(`/users/${id}`, { method: 'DELETE' });
+  },
+
+  getAuthentikSettings(): Promise<AuthentikSettings> {
+    return request('/settings/authentik');
+  },
+
+  updateAuthentikSettings(changes: AuthentikSettingsUpdate): Promise<AuthentikSettings> {
+    return request('/settings/authentik', json('PUT', changes));
   },
 };

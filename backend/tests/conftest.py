@@ -5,7 +5,9 @@ import io
 import os
 import tempfile
 from collections.abc import Generator
+from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from fastapi.testclient import TestClient
@@ -44,6 +46,94 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Generator[TestClient, None, None]
         db._engine = None
         db._session_factory = None
         config.get_settings.cache_clear()
+
+
+@dataclass
+class AuthHarness:
+    """Drives the Authentik login flow against the running app with OIDC mocked."""
+
+    app: object
+    claims: dict = field(default_factory=dict)
+
+    def client(self) -> TestClient:
+        """A fresh client with its own cookie jar (i.e. a distinct browser)."""
+        return TestClient(self.app)
+
+    def login(self, client: TestClient, claims: dict) -> None:
+        """Complete a full login for ``claims``; leaves the session cookie set."""
+        self.claims.clear()
+        self.claims.update(claims)
+        start = client.get("/api/auth/login", follow_redirects=False)
+        assert start.status_code == 302, start.text
+        state = parse_qs(urlparse(start.headers["location"]).query)["state"][0]
+        done = client.get(
+            f"/api/auth/callback?code=fake-code&state={state}", follow_redirects=False
+        )
+        assert done.status_code == 302, done.text
+        assert "auth_error" not in done.headers["location"], done.headers["location"]
+
+
+_AUTH_ENV = {
+    "MATHOM_AUTH_ENABLED": "true",
+    "MATHOM_AUTHENTIK_ISSUER": "https://auth.example.com/application/o/mathom",
+    "MATHOM_AUTHENTIK_CLIENT_ID": "mathom",
+    "MATHOM_AUTHENTIK_CLIENT_SECRET": "top-secret",
+    "MATHOM_SESSION_COOKIE_SECURE": "false",  # TestClient speaks http
+}
+
+
+@pytest.fixture()
+def auth_harness(monkeypatch: pytest.MonkeyPatch) -> Generator[AuthHarness, None, None]:
+    with tempfile.TemporaryDirectory() as tmp:
+        os.environ["MATHOM_DATA_DIR"] = tmp
+        os.environ["MATHOM_TEMPLATES_DIR"] = str(REPO_ROOT / "prompt-templates")
+        os.environ.update(_AUTH_ENV)
+
+        import app.config as config
+        import app.db as db
+
+        config.get_settings.cache_clear()
+        db._engine = None
+        db._session_factory = None
+
+        from app.services import oidc, ollama, transcription
+
+        monkeypatch.setattr(ollama, "chat", lambda messages, language=None: "Mocked AI reply.")
+        monkeypatch.setattr(ollama, "is_reachable", lambda: False)
+        monkeypatch.setattr(
+            transcription, "transcribe", lambda path: ("This is a mocked transcript.", "en")
+        )
+        monkeypatch.setattr(transcription, "probe_duration_seconds", lambda path: 12.5)
+
+        harness = AuthHarness(app=None)
+
+        monkeypatch.setattr(
+            oidc,
+            "discover",
+            lambda config: {
+                "authorization_endpoint": "https://auth.example.com/authorize",
+                "token_endpoint": "https://auth.example.com/token",
+                "userinfo_endpoint": "https://auth.example.com/userinfo",
+            },
+        )
+        monkeypatch.setattr(
+            oidc, "exchange_code", lambda config, **kw: {"access_token": "fake-token"}
+        )
+        monkeypatch.setattr(oidc, "fetch_userinfo", lambda config, **kw: dict(harness.claims))
+
+        from app.main import app as fastapi_app
+
+        harness.app = fastapi_app
+        # Trigger startup (init_db + seed) once via a throwaway client.
+        with TestClient(fastapi_app):
+            pass
+        yield harness
+
+        db._engine = None
+        db._session_factory = None
+        config.get_settings.cache_clear()
+        for key in _AUTH_ENV:
+            os.environ.pop(key, None)
 
 
 @pytest.fixture()

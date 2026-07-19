@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 
+import { useAuth } from '../lib/auth';
 import { LANGUAGES, useI18n } from '../lib/i18n';
 import type { Lang } from '../lib/i18n';
 
@@ -12,6 +13,12 @@ const links = [
 
 export default function Layout() {
   const { t, lang, setLang } = useI18n();
+  const { status, user, isAdmin, isOwner, logout } = useAuth();
+
+  const adminLinks = [
+    ...(isAdmin ? [{ to: '/admin/users', labelKey: 'nav.users', emoji: '👥' }] : []),
+    ...(isOwner ? [{ to: '/admin/settings', labelKey: 'nav.settings', emoji: '🔑' }] : []),
+  ];
 
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col md:flex-row">
@@ -21,7 +28,7 @@ export default function Layout() {
           <p className="mt-1 text-xs text-ink-500">{t('app.tagline')}</p>
         </div>
         <nav className="flex gap-2 md:flex-col">
-          {links.map((link) => (
+          {[...links, ...adminLinks].map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
@@ -59,6 +66,22 @@ export default function Layout() {
             </select>
           </label>
         </div>
+
+        {status.auth_enabled && user && (
+          <div className="mt-6 border-t border-parchment-200 pt-4 md:mt-8">
+            <p className="truncate text-sm font-medium text-ink-700">{user.name || user.email}</p>
+            <p className="text-xs text-ink-400">{t(`role.${user.role}`)}</p>
+            <button
+              onClick={() => void logout()}
+              className="mt-2 text-sm text-ink-500 hover:text-hearth-600"
+            >
+              <span className="mr-1" aria-hidden>
+                🚪
+              </span>
+              {t('auth.signOut')}
+            </button>
+          </div>
+        )}
       </aside>
       <main className="flex-1 p-4 md:p-8">
         <Outlet />
