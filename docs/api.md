@@ -64,6 +64,12 @@ all other endpoints are open. See [authentication.md](authentication.md).
 | `GET /users`               | List users *(Admin/Owner)*                                     |
 | `PATCH /users/{id}`        | Change `role` *(Owner)* or `is_active` *(Admin for users)*     |
 | `DELETE /users/{id}`       | Remove a user *(Owner)*                                        |
+| `GET /invitations`          | List invitation status *(Admin)*                              |
+| `POST /invitations`         | Send a password-setup invitation *(Admin)*                    |
+| `POST /invitations/{id}/revoke` | Revoke a pending invitation *(Admin)*                    |
+| `POST /invitations/accept`  | Accept invitation and set local password *(public)*            |
+| `GET /settings/smtp`        | Read SMTP setup, password masked *(Admin)*                     |
+| `PUT /settings/smtp`        | Update SMTP setup *(Admin)*                                    |
 | `GET /settings/authentik`  | Read Authentik connection settings, secret masked *(Owner)*    |
 | `PUT /settings/authentik`  | Update Authentik connection settings *(Owner)*                 |
 

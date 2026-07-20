@@ -90,3 +90,91 @@ def update_authentik_config(session: Session, updates: dict[str, object]) -> Aut
             _set(session, key, "true" if updates[key] else "false")
     session.commit()
     return get_authentik_config(session)
+
+
+_SMTP_PREFIX = "smtp."
+_SMTP_STR_KEYS = ("host", "username", "password", "from_email", "from_name", "public_base_url")
+_SMTP_INT_KEYS = ("port", "invite_expiry_hours")
+_SMTP_BOOL_KEYS = ("use_tls",)
+
+
+@dataclass
+class SmtpConfig:
+    host: str
+    port: int
+    username: str
+    password: str
+    from_email: str
+    from_name: str
+    public_base_url: str
+    use_tls: bool
+    invite_expiry_hours: int
+
+    @property
+    def configured(self) -> bool:
+        return bool(self.host and self.username and self.password and self.from_email)
+
+
+def get_smtp_config(session: Session) -> SmtpConfig:
+    settings = get_settings()
+    stored = {
+        key[len(_SMTP_PREFIX) :]: value for key, value in _read_all(session, _SMTP_PREFIX).items()
+    }
+
+    def s(key: str, default: str) -> str:
+        return stored.get(key, default)
+
+    def i(key: str, default: int) -> int:
+        try:
+            return int(stored.get(key, str(default)))
+        except ValueError:
+            return default
+
+    return SmtpConfig(
+        host=s("host", settings.smtp_host),
+        port=i("port", settings.smtp_port),
+        username=s("username", settings.smtp_username),
+        password=s("password", settings.smtp_password),
+        from_email=s("from_email", settings.smtp_from_email),
+        from_name=s("from_name", settings.smtp_from_name),
+        public_base_url=s("public_base_url", settings.public_base_url).rstrip("/"),
+        use_tls=s("use_tls", "true" if settings.smtp_use_tls else "false") == "true",
+        invite_expiry_hours=max(
+            1, min(i("invite_expiry_hours", settings.invite_expiry_hours), 720)
+        ),
+    )
+
+
+def _read_all(session: Session, prefix: str) -> dict[str, str]:
+    return dict(
+        session.execute(
+            select(AppSetting.key, AppSetting.value).where(AppSetting.key.like(f"{prefix}%"))
+        )
+        .tuples()
+        .all()
+    )
+
+
+def update_smtp_config(session: Session, updates: dict[str, object]) -> SmtpConfig:
+    for key in _SMTP_STR_KEYS:
+        if key in updates and updates[key] is not None:
+            value = str(updates[key]).strip()
+            if key == "password" and not value:
+                continue
+            _set_prefixed(session, _SMTP_PREFIX, key, value)
+    for key in _SMTP_INT_KEYS:
+        if key in updates and updates[key] is not None:
+            _set_prefixed(session, _SMTP_PREFIX, key, str(updates[key]))
+    for key in _SMTP_BOOL_KEYS:
+        if key in updates and updates[key] is not None:
+            _set_prefixed(session, _SMTP_PREFIX, key, "true" if updates[key] else "false")
+    session.commit()
+    return get_smtp_config(session)
+
+
+def _set_prefixed(session: Session, prefix: str, key: str, value: str) -> None:
+    setting = session.get(AppSetting, f"{prefix}{key}")
+    if setting is None:
+        session.add(AppSetting(key=f"{prefix}{key}", value=value))
+    else:
+        setting.value = value

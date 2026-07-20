@@ -8,12 +8,20 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.deps import require_admin
 from app.models import User
-from app.schemas import AuthentikSettingsOut, AuthentikSettingsUpdate
+from app.schemas import (
+    AuthentikSettingsOut,
+    AuthentikSettingsUpdate,
+    SmtpSettingsOut,
+    SmtpSettingsUpdate,
+)
 from app.services import oidc
 from app.services.settings_store import (
     AuthentikConfig,
+    SmtpConfig,
     get_authentik_config,
+    get_smtp_config,
     update_authentik_config,
+    update_smtp_config,
 )
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -49,3 +57,34 @@ def put_authentik(
     # Discovery may now point at a different issuer; drop the cached document.
     oidc.clear_discovery_cache()
     return _to_out(config)
+
+
+def _smtp_to_out(config: SmtpConfig) -> SmtpSettingsOut:
+    return SmtpSettingsOut(
+        host=config.host,
+        port=config.port,
+        username=config.username,
+        from_email=config.from_email,
+        from_name=config.from_name,
+        public_base_url=config.public_base_url,
+        use_tls=config.use_tls,
+        invite_expiry_hours=config.invite_expiry_hours,
+        configured=config.configured,
+        password_set=bool(config.password),
+    )
+
+
+@router.get("/smtp", response_model=SmtpSettingsOut)
+def get_smtp(
+    db: Session = Depends(get_db), _admin: User = Depends(require_admin)
+) -> SmtpSettingsOut:
+    return _smtp_to_out(get_smtp_config(db))
+
+
+@router.put("/smtp", response_model=SmtpSettingsOut)
+def put_smtp(
+    payload: SmtpSettingsUpdate,
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_admin),
+) -> SmtpSettingsOut:
+    return _smtp_to_out(update_smtp_config(db, payload.model_dump(exclude_unset=True)))
