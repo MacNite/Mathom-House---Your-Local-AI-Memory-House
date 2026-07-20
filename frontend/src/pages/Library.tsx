@@ -114,7 +114,7 @@ export default function Library() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-parchment-300 pb-4">
         <h2 className="font-display text-2xl text-ink-900">{t('library.title')}</h2>
         <button onClick={() => setUploadOpen(true)} className="btn-primary">
           {t('library.newMathom')}
@@ -138,9 +138,9 @@ export default function Library() {
               key={entry.key}
               onClick={() => setShelf(entry.key)}
               aria-pressed={shelf === entry.key}
-              className={`rounded-full px-3 py-1 text-sm ${
+              className={`rounded-sm px-3 py-1 text-xs uppercase tracking-wide ${
                 shelf === entry.key
-                  ? 'bg-ink-900 text-parchment-50'
+                  ? 'bg-moss-700 text-parchment-50'
                   : 'border border-parchment-300 text-ink-700 hover:bg-parchment-100'
               }`}
             >
@@ -152,10 +152,10 @@ export default function Library() {
               key={tag.id}
               onClick={() => setActiveTag(activeTag === tag.name ? null : tag.name)}
               aria-pressed={activeTag === tag.name}
-              className={`rounded-full px-3 py-1 text-sm ${
+              className={`rounded-sm border px-3 py-1 text-xs uppercase tracking-wide ${
                 activeTag === tag.name
-                  ? 'bg-moss-700 text-parchment-50'
-                  : 'bg-moss-200 text-moss-700 hover:bg-moss-500 hover:text-parchment-50'
+                  ? 'border-moss-700 bg-moss-700 text-parchment-50'
+                  : 'border-moss-500 text-moss-700 hover:bg-moss-500 hover:text-parchment-50'
               }`}
             >
               #{tag.name}

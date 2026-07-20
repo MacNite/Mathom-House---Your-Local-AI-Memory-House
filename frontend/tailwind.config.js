@@ -4,39 +4,51 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Warm archive palette: parchment, ink, amber hearth, moss shelves.
+        // Cartographer's Table palette: aged survey paper, sepia ink, a deep
+        // moss legend panel, and an aged-gold "gild" that only appears on the
+        // dark sidebar. All greys carry a warm bias so nothing reads as flat.
+        paper: '#e9e2cf', // the page ground — a map left open on the table
         parchment: {
-          50: '#fdfaf3',
-          100: '#f8f1e2',
-          200: '#efe2c6',
-          300: '#e2cda1',
+          50: '#f6f1e2', // raised surfaces: cards, inputs, buttons
+          100: '#eee4cf', // subtle fills, hovers, skeletons, summary blocks
+          200: '#ddd0b0', // soft chips / pending badge
+          300: '#cdbf9d', // hairline borders + input strokes
+          400: '#bcab84', // stronger rule / double border
         },
         ink: {
-          900: '#2d2418',
-          700: '#4a3d2c',
-          500: '#6f5f48',
-          // Darkened from #94836a to clear WCAG AA (4.5:1) on parchment/white
-          // for the secondary text and placeholders this token is used for.
-          400: '#7a6a4f',
+          900: '#2b2a20', // primary text
+          700: '#463f30', // strong secondary
+          // 500/400 are tuned to clear WCAG AA (4.5:1) on both the paper ground
+          // (#e9e2cf) and the lighter card surface (#f6f1e2).
+          500: '#5e5540',
+          400: '#665c43',
         },
+        // The accent is a sepia map-ink brown, not the old hearth orange.
         hearth: {
-          600: '#b45f21',
-          500: '#c97a35',
-          400: '#dd9a5b',
-          100: '#f7e3cc',
+          600: '#8a5a2b',
+          500: '#a06a30',
+          400: '#b98a4e',
+          100: '#ece0c8',
         },
         moss: {
+          900: '#223027', // deep legend-panel green (the sidebar)
+          800: '#2c3d30', // sidebar hover
           700: '#3f5233',
           500: '#5f7a4d',
           200: '#d3ddc4',
         },
+        gild: {
+          300: '#e9c88a', // aged gold — brand + primary action on the dark panel
+          200: '#d8ccb0', // muted parchment text on the dark panel
+        },
       },
       fontFamily: {
-        display: ['ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
-        body: ['ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
+        display: ['ui-serif', '"Iowan Old Style"', '"Hoefler Text"', 'Georgia', 'Cambria', 'serif'],
+        body: ['ui-sans-serif', 'system-ui', '"Segoe UI"', 'sans-serif'],
       },
-      borderRadius: {
-        doorway: '1.25rem 1.25rem 0.375rem 0.375rem',
+      boxShadow: {
+        // A small hard offset, like a card resting on the table.
+        inset: '3px 3px 0 rgba(90, 70, 40, 0.06)',
       },
     },
   },

@@ -10,12 +10,12 @@ export default function MathomCard({ mathom }: { mathom: MathomListItem }) {
   return (
     <Link
       to={`/mathoms/${mathom.id}`}
-      className="card block rounded-doorway hover:border-hearth-400"
+      className="card block transition-colors hover:border-hearth-400"
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="font-display text-lg text-ink-900">
           {mathom.favorite && (
-            <span aria-label={t('card.favorite')} className="mr-1">
+            <span aria-label={t('card.favorite')} className="mr-1 text-hearth-500">
               ★
             </span>
           )}
@@ -23,7 +23,7 @@ export default function MathomCard({ mathom }: { mathom: MathomListItem }) {
         </h3>
         <StatusBadge status={mathom.status} />
       </div>
-      <p className="mt-1 text-xs text-ink-500">
+      <p className="mt-1.5 text-[11px] uppercase tracking-wide text-ink-500 [font-variant-numeric:tabular-nums]">
         {formatDate(mathom.created_at, lang)}
         {mathom.duration_seconds != null && ` · ${formatDuration(mathom.duration_seconds, t)}`}
         {mathom.language && ` · ${mathom.language}`}

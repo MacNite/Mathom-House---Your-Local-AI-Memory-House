@@ -4,34 +4,56 @@
 
 @layer base {
   body {
-    @apply bg-parchment-50 font-body text-ink-900 antialiased;
+    @apply bg-paper font-body text-ink-900 antialiased;
+    /* Faint surveyor's contour lines — like a chart left open on the table.
+       rgba texture only; the design palette lives in the Tailwind theme. */
+    background-image:
+      repeating-radial-gradient(circle at 82% 12%, transparent 0 27px, rgba(63, 82, 51, 0.05) 27px 28px),
+      repeating-radial-gradient(circle at 8% 92%, transparent 0 33px, rgba(138, 90, 43, 0.045) 33px 34px);
+    background-attachment: fixed;
+  }
+
+  /* Serif headings get room to break sensibly. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 }
 
 @layer base {
   /* A single, consistent keyboard focus ring across every interactive element. */
   :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-    @apply outline-none ring-2 ring-hearth-500 ring-offset-2 ring-offset-parchment-50;
+    @apply outline-none ring-2 ring-hearth-500 ring-offset-2 ring-offset-paper;
   }
 }
 
 @layer components {
+  /* A card is a map inset: hairline frame, a faint inner rule, a small cast
+     shadow. The inner rule is drawn away from the content so it never overlaps. */
   .card {
-    @apply rounded-doorway border border-parchment-200 bg-white/70 p-5 shadow-sm;
+    @apply relative rounded border border-parchment-300 bg-parchment-50 p-5 shadow-inset;
+  }
+  .card::before {
+    content: '';
+    @apply pointer-events-none absolute rounded-sm;
+    inset: 5px;
+    border: 1px solid rgba(138, 90, 43, 0.16);
   }
   .btn {
-    @apply inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors;
+    @apply inline-flex items-center gap-2 rounded px-4 py-2 text-sm font-medium transition-colors;
   }
   .btn-primary {
     @apply btn bg-hearth-600 text-parchment-50 hover:bg-hearth-500;
   }
   .btn-ghost {
-    @apply btn border border-parchment-300 text-ink-700 hover:bg-parchment-100;
+    @apply btn border border-parchment-300 bg-parchment-50 text-ink-700 hover:border-hearth-400 hover:text-hearth-600;
   }
   .input {
-    @apply w-full rounded-xl border border-parchment-300 bg-white/80 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-hearth-500 focus:outline-none;
+    @apply w-full rounded border border-parchment-300 bg-parchment-50 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-hearth-500 focus:outline-none;
   }
+  /* Tag chips read like a map's key: squared, outlined, lettered. */
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full bg-moss-200 px-2.5 py-0.5 text-xs text-moss-700;
+    @apply inline-flex items-center gap-1 rounded-sm border border-moss-500 px-2 py-0.5 text-[11px] uppercase tracking-wide text-moss-700;
   }
 }

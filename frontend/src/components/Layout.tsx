@@ -26,31 +26,33 @@ export default function Layout() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col md:flex-row">
-      <aside className="border-b border-parchment-200 p-4 md:min-h-screen md:w-56 md:border-b-0 md:border-r md:p-6">
+      <aside className="border-b-2 border-gild-300/40 bg-moss-900 p-4 text-gild-200 md:min-h-screen md:w-60 md:border-b-0 md:border-r-2 md:p-6">
         <div className="mb-6">
-          <h1 className="font-display text-3xl text-hearth-600">Mathom</h1>
-          <p className="mt-1 text-xs text-ink-500">{t('app.tagline')}</p>
+          <h1 className="font-display text-3xl tracking-wide text-gild-300">Mathom</h1>
+          <p className="mt-2 text-[10px] uppercase tracking-[0.22em] text-moss-200">
+            {t('app.tagline')}
+          </p>
         </div>
 
-        {/* Primary action, reachable from every page. */}
+        {/* Primary action, reachable from every page — the lamp on the desk. */}
         <button
           onClick={() => setUploadOpen(true)}
-          className="btn-primary mb-4 w-full justify-center"
+          className="mb-5 inline-flex w-full items-center justify-center gap-2 rounded bg-gild-300 px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-moss-900 transition-colors hover:bg-gild-200"
         >
           {t('library.newMathom')}
         </button>
 
-        <nav className="flex flex-wrap gap-2 md:flex-col md:flex-nowrap">
+        <nav className="flex flex-wrap gap-1 md:flex-col md:flex-nowrap">
           {[...links, ...adminLinks].map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               end={link.to === '/'}
               className={({ isActive }) =>
-                `rounded-xl px-3 py-2 text-sm ${
+                `border-l-2 px-3 py-2 text-xs uppercase tracking-[0.12em] transition-colors ${
                   isActive
-                    ? 'bg-hearth-100 font-medium text-hearth-600'
-                    : 'text-ink-700 hover:bg-parchment-100'
+                    ? 'border-gild-300 bg-white/5 font-semibold text-gild-300'
+                    : 'border-transparent text-gild-200 hover:text-white'
                 }`
               }
             >
@@ -62,14 +64,14 @@ export default function Layout() {
           ))}
         </nav>
         <div className="mt-6 md:mt-8">
-          <label className="flex items-center gap-2 text-xs text-ink-500">
+          <label className="flex items-center gap-2 text-xs text-moss-200">
             <span aria-hidden>🌐</span>
             <span className="sr-only">{t('language.label')}</span>
             <select
               value={lang}
               onChange={(event) => setLang(event.target.value as Lang)}
               aria-label={t('language.label')}
-              className="rounded-lg border border-parchment-300 bg-parchment-50 px-2 py-1 text-sm text-ink-700"
+              className="rounded border border-white/15 bg-moss-800 px-2 py-1 text-sm text-gild-200"
             >
               {LANGUAGES.map((entry) => (
                 <option key={entry.code} value={entry.code}>
@@ -81,12 +83,14 @@ export default function Layout() {
         </div>
 
         {status.auth_enabled && user && (
-          <div className="mt-6 border-t border-parchment-200 pt-4 md:mt-8">
-            <p className="truncate text-sm font-medium text-ink-700">{user.name || user.email}</p>
-            <p className="text-xs text-ink-400">{t(`role.${user.role}`)}</p>
+          <div className="mt-6 border-t border-white/15 pt-4 md:mt-8">
+            <p className="truncate text-sm font-medium text-gild-200">{user.name || user.email}</p>
+            <p className="text-[10px] uppercase tracking-[0.14em] text-moss-200">
+              {t(`role.${user.role}`)}
+            </p>
             <button
               onClick={() => void logout()}
-              className="mt-2 text-sm text-ink-500 hover:text-hearth-600"
+              className="mt-2 text-sm text-moss-200 hover:text-gild-300"
             >
               <span className="mr-1" aria-hidden>
                 🚪

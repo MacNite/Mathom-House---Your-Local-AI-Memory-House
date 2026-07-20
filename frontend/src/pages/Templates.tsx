@@ -93,10 +93,10 @@ export default function Templates() {
             <li key={template.id}>
               <button
                 onClick={() => select(template)}
-                className={`w-full rounded-xl px-3 py-2 text-left text-sm ${
+                className={`w-full border-l-2 px-3 py-2 text-left text-sm transition-colors ${
                   selected?.id === template.id
-                    ? 'bg-hearth-100 font-medium text-hearth-600'
-                    : 'text-ink-700 hover:bg-parchment-100'
+                    ? 'border-hearth-500 bg-hearth-100 font-medium text-hearth-600'
+                    : 'border-transparent text-ink-700 hover:bg-parchment-100'
                 }`}
               >
                 {template.name}
