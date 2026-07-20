@@ -1,33 +1,38 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
-import { api } from '../lib/api';
-import { useAuth } from '../lib/auth';
-import { useI18n } from '../lib/i18n';
-import { useToast } from '../lib/toast';
-import type { Role, User } from '../lib/types';
+import { api } from "../lib/api";
+import { useAuth } from "../lib/auth";
+import { useI18n } from "../lib/i18n";
+import { useToast } from "../lib/toast";
+import type { Invitation, Role, User } from "../lib/types";
 
-const ROLES: Role[] = ['admin', 'user'];
+const ROLES: Role[] = ["admin", "user"];
 
 export default function Users() {
   const { t } = useI18n();
   const toast = useToast();
   const { user: me, isAdmin, refresh: refreshAuth } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmation, setConfirmation] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
   const [mustChangePassword, setMustChangePassword] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [inviting, setInviting] = useState(false);
 
   const refresh = useCallback(
     () =>
       api
         .listUsers()
         .then(setUsers)
-        .catch((err) => setError(err instanceof Error ? err.message : t('users.loadError')))
+        .then(() => api.listInvitations().then(setInvitations))
+        .catch((err) =>
+          setError(err instanceof Error ? err.message : t("users.loadError")),
+        )
         .finally(() => setLoading(false)),
     [t],
   );
@@ -36,30 +41,35 @@ export default function Users() {
     void refresh();
   }, [refresh]);
 
-  const applyChange = async (target: User, changes: { role?: Role; is_active?: boolean }) => {
-    setError('');
+  const applyChange = async (
+    target: User,
+    changes: { role?: Role; is_active?: boolean },
+  ) => {
+    setError("");
     try {
       await api.updateUser(target.id, changes);
       await refresh();
       // Keep the header in sync if the Owner edited their own account.
       if (target.id === me?.id) await refreshAuth();
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('settings.saveFailed'));
+      setError(err instanceof Error ? err.message : t("settings.saveFailed"));
     }
   };
 
-  const changeRole = (target: User, role: Role) => applyChange(target, { role });
-  const toggleActive = (target: User) => applyChange(target, { is_active: !target.is_active });
+  const changeRole = (target: User, role: Role) =>
+    applyChange(target, { role });
+  const toggleActive = (target: User) =>
+    applyChange(target, { is_active: !target.is_active });
 
   const createUser = async (event: React.FormEvent) => {
     event.preventDefault();
     if (password !== confirmation) {
-      setError(t('users.passwordMismatch'));
+      setError(t("users.passwordMismatch"));
       return;
     }
 
     setCreating(true);
-    setError('');
+    setError("");
     try {
       await api.createUser({
         name,
@@ -67,52 +77,87 @@ export default function Users() {
         password,
         must_change_password: mustChangePassword,
       });
-      setName('');
-      setEmail('');
-      setPassword('');
-      setConfirmation('');
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmation("");
       setMustChangePassword(true);
       await refresh();
-      toast.success(t('users.created'));
+      toast.success(t("users.created"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('users.createError'));
+      setError(err instanceof Error ? err.message : t("users.createError"));
     } finally {
       setCreating(false);
     }
   };
 
+  const invite = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setInviting(true);
+    setError("");
+    try {
+      await api.createInvitation({ name, email });
+      setName("");
+      setEmail("");
+      await refresh();
+      toast.success("Invitation sent.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Invitation could not be sent.",
+      );
+    } finally {
+      setInviting(false);
+    }
+  };
+  const revokeInvite = async (id: number) => {
+    try {
+      await api.revokeInvitation(id);
+      await refresh();
+      toast.success("Invitation revoked.");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Invitation could not be revoked.",
+      );
+    }
+  };
+
   const remove = async (target: User) => {
-    if (!window.confirm(t('users.confirmDelete', { email: target.email }))) return;
-    setError('');
+    if (!window.confirm(t("users.confirmDelete", { email: target.email })))
+      return;
+    setError("");
     try {
       await api.deleteUser(target.id);
       await refresh();
-      toast.success(t('users.deleted'));
+      toast.success(t("users.deleted"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('settings.saveFailed'));
+      setError(err instanceof Error ? err.message : t("settings.saveFailed"));
     }
   };
 
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink-900">{t('users.title')}</h2>
-      <p className="mt-1 text-sm text-ink-500">{t('users.subtitle')}</p>
+      <h2 className="font-display text-2xl text-ink-900">{t("users.title")}</h2>
+      <p className="mt-1 text-sm text-ink-500">{t("users.subtitle")}</p>
 
       {error && (
         <p className="mt-4 text-sm text-red-700" role="alert">
           {error}
         </p>
       )}
-      {loading && <p className="mt-4 text-sm text-ink-500">{t('common.loading')}</p>}
+      {loading && (
+        <p className="mt-4 text-sm text-ink-500">{t("common.loading")}</p>
+      )}
 
       <form onSubmit={createUser} className="card mt-6 max-w-2xl space-y-4">
         <div>
-          <h3 className="font-display text-lg text-ink-900">{t('users.add')}</h3>
-          <p className="mt-1 text-sm text-ink-500">{t('users.addHint')}</p>
+          <h3 className="font-display text-lg text-ink-900">
+            {t("users.add")}
+          </h3>
+          <p className="mt-1 text-sm text-ink-500">{t("users.addHint")}</p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm text-ink-700">
-            {t('users.name')}
+            {t("users.name")}
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -121,7 +166,7 @@ export default function Users() {
             />
           </label>
           <label className="block text-sm text-ink-700">
-            {t('users.email')}
+            {t("users.email")}
             <input
               required
               type="email"
@@ -132,7 +177,7 @@ export default function Users() {
             />
           </label>
           <label className="block text-sm text-ink-700">
-            {t('users.password')}
+            {t("users.password")}
             <input
               required
               minLength={12}
@@ -144,7 +189,7 @@ export default function Users() {
             />
           </label>
           <label className="block text-sm text-ink-700">
-            {t('users.confirmPassword')}
+            {t("users.confirmPassword")}
             <input
               required
               minLength={12}
@@ -162,13 +207,81 @@ export default function Users() {
             checked={mustChangePassword}
             onChange={(event) => setMustChangePassword(event.target.checked)}
           />
-          {t('users.mustChangePassword')}
+          {t("users.mustChangePassword")}
         </label>
         <div>
-          <button disabled={creating} className="btn-primary disabled:opacity-60">
-            {creating ? t('users.creating') : t('users.create')}
+          <button
+            disabled={creating}
+            className="btn-primary disabled:opacity-60"
+          >
+            {creating ? t("users.creating") : t("users.create")}
           </button>
         </div>
+      </form>
+
+      <form onSubmit={invite} className="card mt-6 max-w-2xl space-y-4">
+        <div>
+          <h3 className="font-display text-lg text-ink-900">
+            Invite user by email
+          </h3>
+          <p className="mt-1 text-sm text-ink-500">
+            The recipient sets their own password. Configure SMTP under Sign-in
+            first.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm text-ink-700">
+            Username
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input mt-1"
+            />
+          </label>
+          <label className="block text-sm text-ink-700">
+            Email
+            <input
+              required
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input mt-1"
+            />
+          </label>
+        </div>
+        <button disabled={inviting} className="btn-primary disabled:opacity-60">
+          {inviting ? "Sending…" : "Send invitation"}
+        </button>
+        {invitations.length > 0 && (
+          <div className="space-y-2 border-t border-parchment-200 pt-3">
+            {invitations.map((entry) => (
+              <div
+                key={entry.id}
+                className="flex flex-wrap items-center justify-between gap-2 text-sm"
+              >
+                <span>
+                  {entry.email} —{" "}
+                  {entry.accepted_at
+                    ? "Accepted"
+                    : entry.revoked_at
+                      ? "Revoked"
+                      : new Date(entry.expires_at) < new Date()
+                        ? "Expired"
+                        : "Pending"}
+                </span>
+                {!entry.accepted_at && !entry.revoked_at && (
+                  <button
+                    type="button"
+                    onClick={() => revokeInvite(entry.id)}
+                    className="text-red-700"
+                  >
+                    Revoke
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </form>
 
       <div className="mt-6 space-y-3">
@@ -182,14 +295,18 @@ export default function Users() {
               <div className="min-w-0">
                 <p className="truncate font-medium text-ink-900">
                   {entry.name || entry.email}
-                  {isSelf && <span className="ml-2 text-xs text-ink-400">({t('users.you')})</span>}
+                  {isSelf && (
+                    <span className="ml-2 text-xs text-ink-400">
+                      ({t("users.you")})
+                    </span>
+                  )}
                 </p>
                 <p className="truncate text-sm text-ink-500">{entry.email}</p>
                 <p className="text-xs text-ink-400">
-                  {t('users.lastLogin')}:{' '}
+                  {t("users.lastLogin")}:{" "}
                   {entry.last_login_at
                     ? new Date(entry.last_login_at).toLocaleString()
-                    : t('users.never')}
+                    : t("users.never")}
                 </p>
               </div>
 
@@ -197,8 +314,10 @@ export default function Users() {
                 {isAdmin ? (
                   <select
                     value={entry.role}
-                    onChange={(event) => changeRole(entry, event.target.value as Role)}
-                    aria-label={t('users.role')}
+                    onChange={(event) =>
+                      changeRole(entry, event.target.value as Role)
+                    }
+                    aria-label={t("users.role")}
                     className="rounded-lg border border-parchment-300 bg-parchment-50 px-2 py-1 text-sm text-ink-700"
                   >
                     {ROLES.map((role) => (
@@ -218,7 +337,9 @@ export default function Users() {
                   disabled={isSelf}
                   className="rounded-lg border border-parchment-300 px-2 py-1 text-sm text-ink-700 hover:bg-parchment-100 disabled:opacity-40"
                 >
-                  {entry.is_active ? t('users.deactivate') : t('users.activate')}
+                  {entry.is_active
+                    ? t("users.deactivate")
+                    : t("users.activate")}
                 </button>
 
                 {!isSelf && (
@@ -226,7 +347,7 @@ export default function Users() {
                     onClick={() => remove(entry)}
                     className="text-sm text-ink-400 hover:text-red-700"
                   >
-                    {t('users.delete')}
+                    {t("users.delete")}
                   </button>
                 )}
               </div>

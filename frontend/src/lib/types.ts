@@ -14,17 +14,13 @@ export interface Summary {
 
 export interface ChatMessage {
   id: number;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   created_at: string;
 }
 
 export type MathomStatus =
-  | 'pending'
-  | 'transcribing'
-  | 'summarizing'
-  | 'ready'
-  | 'error';
+  "pending" | "transcribing" | "summarizing" | "ready" | "error";
 
 export interface MathomListItem {
   id: number;
@@ -75,7 +71,7 @@ export interface TimelineBucket {
   count: number;
 }
 
-export type Role = 'admin' | 'user';
+export type Role = "admin" | "user";
 
 export interface User {
   id: number;
@@ -119,4 +115,38 @@ export interface AuthentikSettingsUpdate {
   public_base_url?: string;
   auto_create_users?: boolean;
   verify_ssl?: boolean;
+}
+
+export interface Invitation {
+  id: number;
+  email: string;
+  name: string;
+  created_at: string;
+  expires_at: string;
+  sent_at: string | null;
+  accepted_at: string | null;
+  revoked_at: string | null;
+}
+export interface SmtpSettings {
+  host: string;
+  port: number;
+  username: string;
+  from_email: string;
+  from_name: string;
+  public_base_url: string;
+  use_tls: boolean;
+  invite_expiry_hours: number;
+  configured: boolean;
+  password_set: boolean;
+}
+export interface SmtpSettingsUpdate {
+  host?: string;
+  port?: number;
+  username?: string;
+  password?: string;
+  from_email?: string;
+  from_name?: string;
+  public_base_url?: string;
+  use_tls?: boolean;
+  invite_expiry_hours?: number;
 }
