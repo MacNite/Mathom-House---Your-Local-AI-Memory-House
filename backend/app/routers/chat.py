@@ -28,6 +28,7 @@ def _try_acquire_chat_slot() -> bool:
         _chat_slots_limit = limit
     return _chat_slots.acquire(blocking=False)
 
+
 router = APIRouter(prefix="/mathoms/{mathom_id}/chat", tags=["chat"])
 
 

@@ -104,9 +104,7 @@ def test_upload_creates_and_finishes_a_job(client: TestClient, wait_for_status) 
         assert job.status == "done"
 
 
-def test_upload_is_rejected_when_queue_is_full(
-    client: TestClient, monkeypatch
-) -> None:  # type: ignore[no-untyped-def]
+def test_upload_is_rejected_when_queue_is_full(client: TestClient, monkeypatch) -> None:  # type: ignore[no-untyped-def]
     from app.routers import mathoms
 
     monkeypatch.setattr(mathoms, "get_settings", lambda: Settings(max_queued_jobs=0))
