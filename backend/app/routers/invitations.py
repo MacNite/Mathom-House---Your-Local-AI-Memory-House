@@ -1,10 +1,9 @@
 """Administrator invitation lifecycle and public registration acceptance."""
 
 from datetime import timedelta
-
-from fastapi import APIRouter, Depends, HTTPException
 from smtplib import SMTPException
 
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
