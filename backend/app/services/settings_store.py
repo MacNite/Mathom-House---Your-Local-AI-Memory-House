@@ -149,7 +149,7 @@ def _read_all(session: Session, prefix: str) -> dict[str, str]:
     return dict(
         session.execute(
             select(AppSetting.key, AppSetting.value).where(AppSetting.key.like(f"{prefix}%"))
-        ).all()
+        ).tuples().all()
     )
 
 
