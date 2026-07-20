@@ -1,9 +1,9 @@
 # Mathom
 
-> **Your Local AI Memory**
+> **Turn annoying voice messages into private, useful notes**
 
-Mathom listens, remembers, organizes, and helps you rediscover conversations,
-meetings, and ideas — all completely local. It transcribes voice recordings
+Mathom turns the voice notes that interrupt your day — from WhatsApp, Telegram,
+recorders, and web meetings — into useful, private notes. It transcribes recordings
 with [faster-whisper](https://github.com/SYSTRAN/faster-whisper), summarizes
 them with [Ollama](https://ollama.com), and shelves every recording as a
 **Mathom** in your searchable local archive. Your data never leaves your own
@@ -15,9 +15,9 @@ here.*
 
 ## Features
 
-- 🎙️ **Voice transcription** — faster-whisper, any common audio format, FFmpeg
-  under the hood
-- ✨ **AI summaries** — 12 editable prompt templates: TL;DR, Meeting Minutes,
+- 🎙️ **Voice-message transcription** — bring in WhatsApp, Telegram, recorder, or
+  web-meeting audio; faster-whisper and FFmpeg handle common formats
+- ✨ **Useful summaries** — 12 editable prompt templates: TL;DR, Meeting Minutes,
   Action Items, Email Draft, GitHub/Jira Issue, CRM Entry, Calendar Events,
   Executive Brief, and more
 - 💬 **Follow-up chat** — ask questions about any recording, grounded in its
@@ -29,10 +29,14 @@ here.*
 - 📤 **Exports** — Markdown, plain text, or JSON per Mathom
 - 👥 **Optional multi-user + SSO** — off by default; enable
   [Authentik](https://goauthentik.io/) single sign-on for private per-user
-  archives with Owner/Admin/User roles and Authentik-managed MFA
+  archives with Admin/User roles and Authentik-managed MFA
   ([docs](docs/authentication.md))
-- 🏠 **Local-first** — no cloud, no telemetry; Ollama is never exposed
+- 📱 **Installable PWA share target** — share audio directly from supported apps
+  into Mathom after installing it on your phone
+- 🏠 **Privacy first** — no cloud, no telemetry; Ollama is never exposed
   publicly
+- 🚫 **No Play Store app** — installation as a PWA is intentional: it avoids a
+  third-party app-store distribution path and keeps your connection direct to your server.
 - 🐳 **One Docker Compose stack** — CPU by default, optional NVIDIA GPU
   overlay, TrueNAS SCALE compatible
 
@@ -49,7 +53,10 @@ make up                   # CPU stack
 make models               # pull the Ollama model (first run only)
 ```
 
-Open **http://localhost:8080** and bring your first recording home.
+Open **http://localhost:8080** and bring your first recording home. For phone
+voice messages, install Mathom as a PWA from your browser; it can then appear in
+the share sheet of supported apps. There is deliberately no Play Store app — see
+[the PWA guide](docs/pwa.md).
 
 GPU users: `make up-gpu` instead of `make up`.
 
@@ -67,7 +74,8 @@ in one container, run together by supervisord) plus the stock Ollama image.
 Only the mathom container publishes a port; Ollama stays on the internal
 network.
 
-Each upload becomes a Mathom and moves through
+Each upload (or audio shared from the installed PWA) becomes a Mathom and
+moves through
 `pending → transcribing → summarizing → ready`. Everything about it — audio,
 transcript, summaries, chat, tags, metadata — is stored locally in SQLite and
 a persistent volume.

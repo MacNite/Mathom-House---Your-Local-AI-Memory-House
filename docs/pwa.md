@@ -3,7 +3,8 @@
 Mathom's frontend is an installable Progressive Web App (PWA). Once installed
 on an Android device it registers as a destination in the system **Share
 Sheet**, so you can send a voice message straight from another app (WhatsApp,
-Signal, your recorder, a file manager) into your own mathom.
+Telegram, Signal, a web-meeting download, your recorder, or a file manager) into
+your own mathom.
 
 ```
 WhatsApp → Share → Mathom → title / template → Upload → Transcribe → Summarize
@@ -26,12 +27,22 @@ Mathom server and nowhere else. No cloud services are involved.
   there the file is uploaded to the existing `POST /api/mathoms` endpoint — the
   transcription and summarization pipeline is unchanged.
 
+## Why PWA instead of a Play Store app
+
+Mathom deliberately has **no Google Play Store app**. Installing the PWA directly
+from your browser keeps the app as a direct connection to your own server, avoids
+an app-store distribution account and its associated tracking/policy surface, and
+lets the browser provide the native-feeling share-sheet integration. The PWA is
+the recommended mobile installation method.
+
 ## Installing on Android
 
 1. Open Mathom in Chrome (or another Chromium browser) on your phone.
 2. Use the browser menu → **Install app** / **Add to Home screen**.
-3. Mathom now appears in the Android Share Sheet. Share an audio message to it,
-   pick a title and summary template if you like, and tap **Upload**.
+3. Mathom now appears in the Android Share Sheet. In WhatsApp, Telegram, a
+   recorder, or a file manager, choose **Share** → **Mathom**. Pick a title and
+   summary template (for example TL;DR, action items, meeting minutes, or
+   calendar events), then tap **Upload**.
 
 ## Requirements & limitations
 

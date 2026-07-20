@@ -1,7 +1,7 @@
 /* ==========================================================================
    Mathom — static demo runtime. No backend, no network. All state lives in
    memory and resets on reload. Mirrors the real app's Library / Detail /
-   Timeline / Templates / Collections views.
+   Timeline / Templates / Collections / Users views.
    ========================================================================== */
 (function () {
   'use strict';
@@ -27,6 +27,7 @@
       'nav.collections': 'Collections',
       'nav.timeline': 'Timeline',
       'nav.templates': 'Templates',
+      'nav.users': 'Users',
 
       'library.title': 'The mathom',
       'library.newMathom': '+ New Mathom',
@@ -70,6 +71,17 @@
 
       'templates.title': 'Prompt Templates',
       'templates.subtitle': 'Editable in the real app — the database copy is authoritative.',
+      'users.title': 'User management',
+      'users.subtitle': 'Demo of the private, per-user archive controls available when authentication is enabled.',
+      'users.add': 'Add user',
+      'users.name': 'Name',
+      'users.email': 'Email',
+      'users.role': 'Role',
+      'users.create': 'Create user',
+      'users.deactivate': 'Deactivate',
+      'users.activate': 'Activate',
+      'users.delete': 'Delete',
+      'users.you': 'You',
 
       'timeline.title': 'Timeline',
       'timeline.subtitle': 'Your mathom, month by month.',
@@ -367,6 +379,12 @@
       o
     );
   }
+
+  const users = [
+    { id: 1, name: 'Alex Owner', email: 'alex@example.test', role: 'admin', is_active: true },
+    { id: 2, name: 'Priya Patel', email: 'priya@example.test', role: 'user', is_active: true },
+    { id: 3, name: 'Marco Ruiz', email: 'marco@example.test', role: 'user', is_active: false },
+  ];
 
   const mathoms = [
     mkMathom({
@@ -723,12 +741,33 @@
       </div>`;
   }
 
+  function renderUsers() {
+    const rows = users.map((user) => `
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:1rem">
+        <div><h3 style="margin:0">${esc(user.name)}${user.id === 1 ? ` <span class="muted">(${esc(t('users.you'))})</span>` : ''}</h3>
+          <p class="muted" style="margin:0.25rem 0 0">${esc(user.email)} · ${esc(user.role)} · ${user.is_active ? 'Active' : 'Inactive'}</p></div>
+        ${user.id === 1 ? '' : `<div style="display:flex;gap:0.5rem"><button class="btn-ghost" data-toggle-user="${user.id}">${esc(t(user.is_active ? 'users.deactivate' : 'users.activate'))}</button><button class="btn-ghost" data-delete-user="${user.id}">${esc(t('users.delete'))}</button></div>`}
+      </div>`).join('');
+    main.innerHTML = `
+      <h2 class="font-display" style="font-size:1.5rem;margin:0">${esc(t('users.title'))}</h2>
+      <p class="muted" style="margin-top:0.25rem">${esc(t('users.subtitle'))}</p>
+      <form class="card" id="user-form" style="margin-top:1.5rem;display:grid;gap:0.75rem;max-width:40rem">
+        <h3 style="margin:0">${esc(t('users.add'))}</h3>
+        <input class="input" name="name" required placeholder="${esc(t('users.name'))}" />
+        <input class="input" name="email" required type="email" placeholder="${esc(t('users.email'))}" />
+        <select class="select" name="role"><option value="user">user</option><option value="admin">admin</option></select>
+        <div><button class="btn-primary">${esc(t('users.create'))}</button></div>
+      </form>
+      <div class="list" style="margin-top:1rem">${rows}</div>`;
+  }
+
   function render() {
     switch (state.view) {
       case 'library': return renderLibrary();
       case 'timeline': return renderTimeline();
       case 'templates': return renderTemplates();
       case 'collections': return renderCollections();
+      case 'users': return renderUsers();
       default: return renderLibrary();
     }
   }
@@ -788,6 +827,10 @@
 
     if (e.target.closest('#new-mathom')) { simulateUpload(); return; }
     if (e.target.closest('#back')) { setView('library'); return; }
+    const toggleUser = e.target.closest('[data-toggle-user]');
+    if (toggleUser) { const user = users.find((entry) => entry.id === Number(toggleUser.dataset.toggleUser)); if (user) { user.is_active = !user.is_active; renderUsers(); } return; }
+    const deleteUser = e.target.closest('[data-delete-user]');
+    if (deleteUser) { const index = users.findIndex((entry) => entry.id === Number(deleteUser.dataset.deleteUser)); if (index >= 0) { users.splice(index, 1); renderUsers(); } return; }
 
     const m = mathoms.find((x) => x.id === state.currentId);
     if (!m) return;
@@ -856,6 +899,13 @@
   });
 
   document.addEventListener('submit', (e) => {
+    if (e.target.id === 'user-form') {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      users.push({ id: nextId(), name: form.get('name'), email: form.get('email'), role: form.get('role'), is_active: true });
+      renderUsers();
+      return;
+    }
     if (e.target.id === 'chat-form') {
       e.preventDefault();
       const input = $('#chat-input');
