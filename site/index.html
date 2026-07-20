@@ -6,7 +6,7 @@
     <title>mathom</title>
     <meta
       name="description"
-      content="Mathom is a fully local, self-hosted mathom. Transcribe voice recordings with faster-whisper, summarize them with Ollama, and shelve every recording in a searchable archive that never leaves your own server."
+      content="Turn WhatsApp, Telegram, and meeting recordings into private transcripts, useful summaries, and searchable notes on your own server."
     />
     <link rel="canonical" href="https://macnite.github.io/mathom/" />
 
@@ -20,7 +20,7 @@
     <meta property="og:title" content="mathom" />
     <meta
       property="og:description"
-      content="Transcribe, summarize, and rediscover your conversations — fully local, no cloud, no telemetry."
+      content="Turn voice messages and meeting recordings into private transcripts and useful summaries — fully local, no cloud, no telemetry."
     />
     <meta property="og:image" content="./assets/logo-mark.png" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -68,10 +68,9 @@
           <span class="eyebrow">100% local · self-hosted · no cloud</span>
           <h1>mathom</h1>
           <p class="lede">
-            Mathom listens, remembers, organizes, and helps you rediscover
-            conversations, meetings, and ideas. It transcribes voice recordings
-            with faster-whisper, summarizes them with Ollama, and shelves every
-            recording in a searchable archive — all on your own hardware.
+            Stop replaying long voice messages. Share audio from WhatsApp, Telegram,
+            recorders, or web meetings to Mathom; it transcribes it, produces the
+            summary you need, and keeps it searchable on your own hardware.
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="./demo.html">Try the live demo</a>
@@ -116,8 +115,7 @@
           <span class="eyebrow">Features</span>
           <h2>A real archive, not a junk drawer</h2>
           <p>
-            Every capability runs on your own hardware. Bring a recording home
-            and Mathom does the rest.
+            Every capability runs on your own hardware. Bring a voice message or meeting recording home and Mathom does the rest.
           </p>
         </div>
         <div class="card-grid">
@@ -133,8 +131,17 @@
             <div class="icon">✨</div>
             <h3>AI summaries</h3>
             <p>
-              12 editable prompt templates — TL;DR, Meeting Minutes, Action
-              Items, Email Draft, and more — powered locally by Ollama.
+              Editable templates turn a transcript into a TL;DR, meeting minutes, action
+              items, calendar events, email draft, and more — powered locally by Ollama.
+            </p>
+          </div>
+          <div class="card reveal">
+            <div class="icon">📲</div>
+            <h3>Share straight from your apps</h3>
+            <p>
+              Install Mathom as a PWA and share audio directly from supported
+              apps such as WhatsApp, Telegram, your recorder, or a file manager.
+              No Play Store app is offered: the direct PWA is preferred for privacy.
             </p>
           </div>
           <div class="card reveal">
@@ -194,7 +201,7 @@
       <div class="container">
         <div class="section-head reveal">
           <span class="eyebrow">How it works</span>
-          <h2>From recording to remembered</h2>
+          <h2>From voice message to useful note</h2>
           <p>
             Each upload becomes a Mathom and moves through four stages —
             entirely on your machine.
@@ -203,8 +210,8 @@
         <div class="flow reveal">
           <div class="flow-step">
             <div class="num">1</div>
-            <h3>Upload</h3>
-            <p>Drop in a voice recording. Audio is stored on a local volume.</p>
+            <h3>Share or upload</h3>
+            <p>Use the installed PWA share sheet or drop in a recording. Audio stays on your local volume.</p>
           </div>
           <div class="flow-step">
             <div class="num">2</div>
@@ -355,8 +362,8 @@
         <span class="eyebrow">Documentation</span>
         <h2>Read the docs, then make it yours</h2>
         <p>
-          Architecture, deployment (including TrueNAS SCALE), the threat model,
-          authentication, and the API overview — all in the repository.
+          Architecture, privacy-first deployment, PWA sharing, user management, the
+          threat model, authentication, and the API overview — all in the repository.
         </p>
         <div class="cta-actions">
           <a
@@ -397,7 +404,8 @@
           <div class="footer-col">
             <h4>Learn more</h4>
             <a href="https://github.com/MacNite/mathom/blob/main/docs/threat-model.md">Threat model</a>
-            <a href="https://github.com/MacNite/mathom/blob/main/docs/authentication.md">Authentication</a>
+            <a href="https://github.com/MacNite/mathom/blob/main/docs/authentication.md">Authentication & users</a>
+            <a href="https://github.com/MacNite/mathom/blob/main/docs/pwa.md">PWA sharing (no Play Store)</a>
             <a href="https://github.com/MacNite/mathom/blob/main/CONTRIBUTING.md">Contributing</a>
             <a href="https://github.com/MacNite/mathom/blob/main/SECURITY.md">Security policy</a>
           </div>

@@ -27,6 +27,21 @@ make up-gpu        # compose.yaml + compose.gpu.yaml
 This gives both Ollama and faster-whisper GPU access and switches whisper to
 `cuda`/`float16` by default.
 
+## Phone sharing (recommended PWA installation)
+
+For the quickest route from an annoying voice message to a useful note, install
+Mathom as a PWA on your phone. The installed app can receive audio shared from
+WhatsApp, Telegram, a recorder, or a downloaded web meeting, then lets you choose
+a template such as TL;DR, action items, or calendar events before upload. There
+is intentionally **no Play Store app**: the direct PWA installation is preferred
+for privacy and keeps the connection between your phone and your own server.
+
+The Share Target requires HTTPS when Mathom is reached over your network. Put a
+TLS-enabled reverse proxy or VPN in front of Mathom, use its HTTPS URL on the
+phone, then choose **Install app** / **Add to Home screen** in a Chromium browser.
+Do not expose an unauthenticated instance to the internet. See [the PWA guide](pwa.md)
+for browser support and the exact flow.
+
 ## TrueNAS SCALE
 
 Mathom runs as a custom Docker Compose app on TrueNAS SCALE 24.04+

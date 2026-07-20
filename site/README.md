@@ -23,8 +23,8 @@ site/
 ## The demo (`demo.html`)
 
 A click-around, **fully client-side** reproduction of the real app — Library,
-Mathom detail (summaries, transcript, chat), Timeline, Templates, and
-Collections. It runs on seeded sample data held in memory, so:
+Mathom detail (summaries, transcript, chat), Timeline, Templates, Collections,
+and a user-management view. It runs on seeded sample data held in memory, so:
 
 - **No backend, no network, no real transcription or LLM.** Summaries and chat
   replies are canned but plausible, on a short simulated delay.
@@ -34,8 +34,9 @@ Collections. It runs on seeded sample data held in memory, so:
 
 Interactions that work: searching, shelf/tag filters, opening a Mathom,
 favoriting, archiving, deleting, editing the title, adding/removing tags,
-toggling collections, generating a summary from any template, asking follow-up
-questions, and a simulated "New Mathom" upload that walks through
+toggling collections, demonstrating user activation/deactivation and account creation,
+generating a summary from any template, asking follow-up questions, and a simulated
+"New Mathom" upload that walks through
 `pending → transcribing → summarizing → ready`.
 
 ## Preview locally
