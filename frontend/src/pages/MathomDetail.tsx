@@ -238,9 +238,9 @@ export default function MathomDetail() {
                     : api.addToCollection(collection.id, mathom.id)
                   ).then(refresh)
                 }
-                className={`rounded-full px-3 py-1 ${
+                className={`rounded-sm px-3 py-1 text-xs uppercase tracking-wide ${
                   inCollection
-                    ? 'bg-ink-900 text-parchment-50'
+                    ? 'bg-moss-700 text-parchment-50'
                     : 'border border-parchment-300 text-ink-700 hover:bg-parchment-100'
                 }`}
               >

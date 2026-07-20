@@ -37,12 +37,12 @@ export default function Timeline() {
         <ul className="mt-6 space-y-2">
           {buckets.map((bucket) => (
             <li key={bucket.month} className="flex items-center gap-3">
-              <span className="w-40 shrink-0 text-sm text-ink-700">
+              <span className="w-40 shrink-0 text-xs uppercase tracking-wide text-ink-700">
                 {formatMonth(bucket.month, lang)}
               </span>
-              <div className="h-6 flex-1 rounded-full bg-parchment-100">
+              <div className="h-6 flex-1 rounded-sm bg-parchment-200">
                 <div
-                  className="flex h-6 items-center rounded-full bg-hearth-400 px-2 text-xs text-ink-900"
+                  className="flex h-6 items-center rounded-sm bg-hearth-500 px-2 text-xs font-medium text-parchment-50 [font-variant-numeric:tabular-nums]"
                   style={{ width: `${Math.max(8, (bucket.count / max) * 100)}%` }}
                 >
                   {bucket.count}
