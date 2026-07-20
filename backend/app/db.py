@@ -194,7 +194,6 @@ def _migrate_template_language(conn: object) -> None:
     if "template_language" not in _column_names(conn, "mathoms"):
         conn.execute(  # type: ignore[attr-defined]
             text(
-                "ALTER TABLE mathoms ADD COLUMN template_language "
-                "VARCHAR(10) NOT NULL DEFAULT 'en'"
+                "ALTER TABLE mathoms ADD COLUMN template_language VARCHAR(10) NOT NULL DEFAULT 'en'"
             )
         )
