@@ -13,6 +13,7 @@ from app.routers import (
     chat,
     collections,
     health,
+    invitations,
     mathoms,
     search,
     settings,
@@ -56,6 +57,7 @@ app.include_router(health.router, prefix=API_PREFIX)
 app.include_router(auth.router, prefix=API_PREFIX)
 app.include_router(users.router, prefix=API_PREFIX)
 app.include_router(settings.router, prefix=API_PREFIX)
+app.include_router(invitations.router, prefix=API_PREFIX)
 app.include_router(mathoms.router, prefix=API_PREFIX)
 app.include_router(chat.router, prefix=API_PREFIX)
 app.include_router(templates.router, prefix=API_PREFIX)

@@ -212,3 +212,49 @@ class AuthentikSettingsUpdate(BaseModel):
     public_base_url: str | None = None
     auto_create_users: bool | None = None
     verify_ssl: bool | None = None
+
+
+class InvitationCreate(BaseModel):
+    name: str = Field(default="", max_length=200)
+    email: str = Field(min_length=3, max_length=320)
+
+
+class InvitationAccept(BaseModel):
+    token: str = Field(min_length=20, max_length=200)
+    password: str = Field(min_length=12, max_length=256)
+
+
+class InvitationOut(ORMModel):
+    id: int
+    email: str
+    name: str
+    created_at: datetime
+    expires_at: datetime
+    sent_at: datetime | None
+    accepted_at: datetime | None
+    revoked_at: datetime | None
+
+
+class SmtpSettingsOut(BaseModel):
+    host: str
+    port: int
+    username: str
+    from_email: str
+    from_name: str
+    public_base_url: str
+    use_tls: bool
+    invite_expiry_hours: int
+    configured: bool
+    password_set: bool
+
+
+class SmtpSettingsUpdate(BaseModel):
+    host: str | None = None
+    port: int | None = Field(default=None, ge=1, le=65535)
+    username: str | None = None
+    password: str | None = None
+    from_email: str | None = Field(default=None, max_length=320)
+    from_name: str | None = Field(default=None, max_length=200)
+    public_base_url: str | None = Field(default=None, max_length=500)
+    use_tls: bool | None = None
+    invite_expiry_hours: int | None = Field(default=None, ge=1, le=720)

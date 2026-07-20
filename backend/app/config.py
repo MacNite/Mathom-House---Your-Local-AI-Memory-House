@@ -61,6 +61,16 @@ class Settings(BaseSettings):
     # first user to sign in is made Owner.
     auth_owner_email: str = ""
 
+    # SMTP defaults for invitation delivery. Values can be overridden by an admin.
+    smtp_host: str = ""
+    smtp_port: int = 465
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_from_name: str = "Mathom"
+    smtp_use_tls: bool = False
+    invite_expiry_hours: int = 168
+
     @property
     def database_url(self) -> str:
         return f"sqlite:///{self.data_dir / 'mathom.db'}"
