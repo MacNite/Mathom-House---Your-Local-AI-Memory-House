@@ -142,5 +142,47 @@ def _migrate_local_auth(conn: object) -> None:
     ):
         if name not in _column_names(conn, "users"):
             conn.execute(text(f"ALTER TABLE users ADD COLUMN {name} {definition}"))  # type: ignore[attr-defined]
+    # Legacy installations defined subject as NOT NULL because every account
+    # originally came from Authentik. SQLite cannot relax NOT NULL in place, so
+    # rebuild just this table while preserving ids referenced by archive rows
+    # and sessions. This lets an existing auth-disabled installation create its
+    # first local account with no OIDC subject.
+    subject_info = next(
+        (row for row in conn.execute(text("PRAGMA table_info(users)")) if row[1] == "subject"),  # type: ignore[attr-defined]
+        None,
+    )
+    if subject_info is not None and subject_info[3]:
+        conn.execute(  # type: ignore[attr-defined]
+            text(
+                "CREATE TABLE users_local_auth_new ("
+                "id INTEGER NOT NULL PRIMARY KEY, "
+                "subject VARCHAR(255), "
+                "email VARCHAR(320) NOT NULL, "
+                "name VARCHAR(200) NOT NULL, "
+                "role VARCHAR(20) NOT NULL, "
+                "is_active BOOLEAN NOT NULL, "
+                "created_at DATETIME NOT NULL, "
+                "password_hash VARCHAR(500), "
+                "must_change_password BOOLEAN NOT NULL DEFAULT 0, "
+                "updated_at DATETIME, "
+                "last_login_at DATETIME, "
+                "UNIQUE(subject), UNIQUE(email))"
+            )
+        )
+        conn.execute(  # type: ignore[attr-defined]
+            text(
+                "INSERT INTO users_local_auth_new "
+                "(id, subject, email, name, role, is_active, created_at, password_hash, "
+                "must_change_password, updated_at, last_login_at) "
+                "SELECT id, subject, email, name, role, is_active, created_at, password_hash, "
+                "COALESCE(must_change_password, 0), COALESCE(updated_at, created_at), "
+                "last_login_at FROM users"
+            )
+        )
+        conn.execute(text("DROP TABLE users"))  # type: ignore[attr-defined]
+        conn.execute(text("ALTER TABLE users_local_auth_new RENAME TO users"))  # type: ignore[attr-defined]
+        conn.execute(text("CREATE INDEX ix_users_subject ON users(subject)"))  # type: ignore[attr-defined]
+        conn.execute(text("CREATE INDEX ix_users_email ON users(email)"))  # type: ignore[attr-defined]
+        conn.execute(text("CREATE INDEX ix_users_role ON users(role)"))  # type: ignore[attr-defined]
     # owner was a legacy role; SQLite has no enum constraint, so this is safe and idempotent.
     conn.execute(text("UPDATE users SET role = 'admin' WHERE role = 'owner'"))  # type: ignore[attr-defined]
