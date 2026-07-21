@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 
 import { formatDuration } from '../lib/format';
 import { translate } from '../lib/i18n';
@@ -38,5 +39,21 @@ describe('MathomCard', () => {
     expect(screen.getByText('Call with the carpenter')).toBeInTheDocument();
     expect(screen.getByText('house')).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/mathoms/7');
+  });
+
+  it('offers a delete control without nesting it in the detail link', () => {
+    const onDelete = vi.fn();
+    render(
+      <MemoryRouter>
+        <MathomCard mathom={mathom} onDelete={onDelete} />
+      </MemoryRouter>,
+    );
+
+    const deleteButton = screen.getByRole('button', {
+      name: 'Delete “Call with the carpenter”',
+    });
+    expect(deleteButton.closest('a')).toBeNull();
+    fireEvent.click(deleteButton);
+    expect(onDelete).toHaveBeenCalledWith(mathom);
   });
 });
