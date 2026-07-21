@@ -60,6 +60,11 @@ def test_safe_error_never_leaks_internals(exc: Exception) -> None:
     assert message  # always something friendly
 
 
+def test_safe_error_identifies_media_timeout() -> None:
+    message = pipeline._safe_error(subprocess.TimeoutExpired(cmd="ffmpeg", timeout=600))
+    assert "timed out" in message.lower()
+
+
 def test_validate_audio_rejects_non_audio(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     monkeypatch.setattr(transcription, "_ffprobe_streams", lambda path: [])
     with pytest.raises(transcription.AudioValidationError):

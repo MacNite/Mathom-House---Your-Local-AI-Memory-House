@@ -63,9 +63,17 @@ export default function MathomDetail() {
   }, [lang, refresh]);
 
   // Poll while the pipeline is still working on this mathom — but skip ticks
-  // while the tab is hidden so a backgrounded PWA doesn't keep polling.
+  // while the tab is hidden so a backgrounded PWA doesn't keep polling. Visual
+  // analysis can be started after an otherwise failed or ready recording, so
+  // its independent status must keep this view fresh too.
   useEffect(() => {
-    if (!mathom || ["ready", "error"].includes(mathom.status)) return;
+    if (
+      !mathom ||
+      (["ready", "error"].includes(mathom.status) &&
+        !["pending", "processing"].includes(mathom.vision_status ?? "not_requested"))
+    ) {
+      return;
+    }
     const timer = setInterval(() => {
       if (!document.hidden) refresh();
     }, 2500);
@@ -309,6 +317,7 @@ export default function MathomDetail() {
             <h3 className="font-display text-lg">Visual analysis</h3>
             <button
               className="btn-ghost"
+              disabled={["pending", "processing"].includes(mathom.vision_status ?? "not_requested")}
               onClick={() =>
                 api
                   .rerunVisualAnalysis(mathom.id)
