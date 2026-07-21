@@ -15,8 +15,8 @@ here.*
 
 ## Features
 
-- 🎙️ **Audio and video-with-audio transcription** — upload recordings or MP4
-  video with an audio track; Mathom transcribes audio only, never video images
+- 🎙️ **Audio and video transcription** — upload recordings or MP4/WebM video;
+  the audio track is transcribed, with optional local visual frame analysis
 - 📄 **Text and documents** — paste text or import local TXT, Markdown, PDF, and DOCX
 - ✨ **Useful summaries** — 12 editable prompt templates: TL;DR, Meeting Minutes,
   Action Items, Email Draft, GitHub/Jira Issue, CRM Entry, Calendar Events,
