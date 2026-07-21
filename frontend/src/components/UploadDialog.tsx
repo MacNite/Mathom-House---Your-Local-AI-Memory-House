@@ -138,7 +138,21 @@ export default function UploadDialog({
         <p id={descId} className="mt-1 text-sm text-ink-500">
           {sharedFile ? t('upload.sharedSubtitle') : t('upload.subtitle')}
         </p>
-        {!sharedFile && <fieldset className="mt-3 flex gap-3 text-sm text-ink-700"><legend>{t('upload.source')}</legend>{(['media', 'text', 'document'] as const).map((kind) => <label key={kind}><input type="radio" checked={source === kind} onChange={() => setSource(kind)} /> {t(`upload.source.${kind}`)}</label>)}</fieldset>}
+        {!sharedFile && (
+          <fieldset className="mt-3 flex gap-3 text-sm text-ink-700">
+            <legend>{t('upload.source')}</legend>
+            {(['media', 'text', 'document'] as const).map((kind) => (
+              <label key={kind}>
+                <input
+                  type="radio"
+                  checked={source === kind}
+                  onChange={() => setSource(kind)}
+                />{' '}
+                {t(`upload.source.${kind}`)}
+              </label>
+            ))}
+          </fieldset>
+        )}
         {sharedFile ? (
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-moss-200 bg-moss-200/40 px-3 py-2 text-sm text-ink-700">
             <span aria-hidden>🎧</span>
@@ -146,16 +160,47 @@ export default function UploadDialog({
           </div>
         ) : source !== 'text' ? (
           <label className="mt-4 block text-sm text-ink-700">
-              {source === 'document' ? t('upload.documentFile') : t('upload.audioFile')}
+            {source === 'document' ? t('upload.documentFile') : t('upload.audioFile')}
             <input
               ref={fileRef}
               type="file"
-              accept={source === 'document' ? '.txt,.md,.pdf,.docx' : 'audio/*,video/mp4,.m4a,.opus,.oga'}
-              className="input mt-1" onChange={(event) => setVideoSelected(Boolean(event.currentTarget.files?.[0]?.type.startsWith('video/')))}
+              accept={
+                source === 'document'
+                  ? '.txt,.md,.pdf,.docx'
+                  : 'audio/*,video/mp4,video/webm,.m4a,.opus'
+              }
+              className="input mt-1"
+              onChange={(event) =>
+                setVideoSelected(
+                  Boolean(event.currentTarget.files?.[0]?.type.startsWith('video/')),
+                )
+              }
             />
           </label>
-        ) : <label className="mt-4 block text-sm text-ink-700">{t('upload.text')}<textarea value={text} onChange={(event) => setText(event.target.value)} className="input mt-1 min-h-40" maxLength={500000} /></label>}
-        {source === 'media' && (videoSelected || sharedFile?.type.startsWith('video/')) && <label className="mt-3 block rounded-xl bg-parchment-100 p-3 text-sm text-ink-700"><input type="checkbox" checked={analyzeVisuals} onChange={(event) => setAnalyzeVisuals(event.target.checked)} /> {t('upload.analyzeVisuals')}<span className="mt-1 block text-xs text-ink-500">{t('upload.analyzeVisualsHelp')}</span></label>}
+        ) : (
+          <label className="mt-4 block text-sm text-ink-700">
+            {t('upload.text')}
+            <textarea
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              className="input mt-1 min-h-40"
+              maxLength={500000}
+            />
+          </label>
+        )}
+        {source === 'media' && (videoSelected || sharedFile?.type.startsWith('video/')) && (
+          <label className="mt-3 block rounded-xl bg-parchment-100 p-3 text-sm text-ink-700">
+            <input
+              type="checkbox"
+              checked={analyzeVisuals}
+              onChange={(event) => setAnalyzeVisuals(event.target.checked)}
+            />{' '}
+            {t('upload.analyzeVisuals')}
+            <span className="mt-1 block text-xs text-ink-500">
+              {t('upload.analyzeVisualsHelp')}
+            </span>
+          </label>
+        )}
         <label className="mt-3 block text-sm text-ink-700">
           {t('upload.titleLabel')} <span className="text-ink-400">{t('upload.optional')}</span>
           <input

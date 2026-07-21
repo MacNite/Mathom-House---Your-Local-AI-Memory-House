@@ -194,6 +194,10 @@ def create_text_mathom(
         title=payload.title.strip() or "Untitled Mathom",
         transcript=payload.text,
         source_type="text",
+        # Text and document sources have no media; without this the model
+        # default (True) makes the UI show a broken audio player.
+        has_audio_stream=False,
+        has_video_stream=False,
         status="pending",
         template_language=payload.template_language,
         user_id=user.id if user else None,
@@ -251,6 +255,10 @@ async def upload_document(
         original_filename=Path(original_name).name[:500],
         source_type="document",
         source_path=str(target),
+        # Documents have no media; without this the model default (True) makes
+        # the UI show a broken audio player and get_audio return a misleading 404.
+        has_audio_stream=False,
+        has_video_stream=False,
         status="pending",
         template_language=template_language,
         user_id=user.id if user else None,

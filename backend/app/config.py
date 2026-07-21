@@ -22,7 +22,6 @@ class Settings(BaseSettings):
     vision_max_frames: int = Field(default=24, ge=1, le=120)
     vision_batch_size: int = Field(default=4, ge=1, le=12)
     vision_sample_interval_seconds: float = Field(default=30, ge=1, le=3600)
-    vision_scene_threshold: float = Field(default=0.35, ge=0.0, le=1.0)
     vision_frame_max_width: int = Field(default=1024, ge=128, le=4096)
     vision_jpeg_quality: int = Field(default=85, ge=30, le=95)
     vision_timeout_seconds: float = Field(default=300, ge=5, le=1800)

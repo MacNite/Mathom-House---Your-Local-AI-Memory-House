@@ -256,6 +256,23 @@ def summarize_mathom(
         return summary
 
 
+def _format_observations(observations: list[dict[str, object]]) -> str:
+    """Render sampled-frame observations as readable lines, not a Python repr."""
+    lines: list[str] = []
+    for item in observations:
+        try:
+            timestamp = float(str(item.get("timestamp_seconds", 0)))
+        except (TypeError, ValueError):
+            timestamp = 0.0
+        description = str(item.get("description", "")).strip()
+        line = f"[{timestamp:.1f}s] {description}"
+        setting = str(item.get("setting", "")).strip()
+        if setting:
+            line += f" (setting: {setting})"
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def build_context(mathom: Mathom) -> str:
     """One explicit model/search/export context; never changes spoken transcript."""
     if not mathom.visual_summary and not mathom.visual_observations:
@@ -270,7 +287,7 @@ def build_context(mathom: Mathom) -> str:
     if mathom.visual_observations:
         parts.append(
             "--- Visual observations (sampled frames; AI-generated) ---\n"
-            + str(mathom.visual_observations)
+            + _format_observations(mathom.visual_observations)
         )
     return "\n\n".join(parts)
 
