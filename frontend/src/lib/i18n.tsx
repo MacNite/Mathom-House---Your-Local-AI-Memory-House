@@ -126,7 +126,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'upload.uploading': 'Uploading…',
     'upload.upload': 'Upload',
     'upload.sharedSubtitle':
-      'Shared from another app. It will be transcribed and summarized, then shelved.',
+      'Shared from another app. It will be imported and summarized, then shelved.',
 
     'share.receiving': 'Receiving your recording…',
     'share.emptyTitle': 'Nothing was shared.',
@@ -369,7 +369,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'upload.uploading': 'Wird hochgeladen…',
     'upload.upload': 'Hochladen',
     'upload.sharedSubtitle':
-      'Aus einer anderen App geteilt. Wird transkribiert, zusammengefasst und abgelegt.',
+      'Aus einer anderen App geteilt. Wird importiert, zusammengefasst und abgelegt.',
 
     'share.receiving': 'Deine Aufnahme wird empfangen…',
     'share.emptyTitle': 'Es wurde nichts geteilt.',
@@ -609,7 +609,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'upload.uploading': 'Subiendo…',
     'upload.upload': 'Subir',
     'upload.sharedSubtitle':
-      'Compartido desde otra app. Se transcribirá, se resumirá y se guardará.',
+      'Compartido desde otra app. Se importará, se resumirá y se guardará.',
 
     'share.receiving': 'Recibiendo tu grabación…',
     'share.emptyTitle': 'No se compartió nada.',

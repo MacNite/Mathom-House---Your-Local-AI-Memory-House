@@ -7,7 +7,7 @@
 const SHARE_CACHE = 'mathom-share-target-v1';
 const SHARED_FILE_KEY = '/__shared-audio';
 
-export interface SharedAudio {
+export interface SharedFile {
   file: File;
   title: string;
   text: string;
@@ -24,10 +24,10 @@ export function registerServiceWorker(): void {
 }
 
 /**
- * Read the audio file most recently shared into Mathom, if any. Returns null
+ * Read the file most recently shared into Mathom, if any. Returns null
  * when nothing was shared or the platform lacks Cache Storage.
  */
-export async function readSharedAudio(): Promise<SharedAudio | null> {
+export async function readSharedAudio(): Promise<SharedFile | null> {
   if (!('caches' in window)) return null;
   try {
     const cache = await caches.open(SHARE_CACHE);

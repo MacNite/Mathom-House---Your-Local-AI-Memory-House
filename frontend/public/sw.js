@@ -2,7 +2,7 @@
 //
 // Its one job is to make Mathom installable and to receive files from the
 // Android Share Sheet via the Web Share Target API. When another app (e.g.
-// WhatsApp) shares a voice message to Mathom, the browser POSTs a multipart
+// WhatsApp) shares a recording or document to Mathom, the browser POSTs a multipart
 // form to `/share-target`. A page cannot read that POST directly, so the
 // service worker intercepts it, stashes the shared file in the Cache Storage,
 // and redirects to the `/share-target` route where the React app picks it up.
@@ -34,7 +34,7 @@ self.addEventListener('fetch', (event) => {
 async function handleShareTarget(request) {
   try {
     const formData = await request.formData();
-    const file = formData.get('audio');
+    const file = formData.get('file');
     const title = (formData.get('title') || '').toString();
     const sharedText = (formData.get('text') || '').toString();
 
