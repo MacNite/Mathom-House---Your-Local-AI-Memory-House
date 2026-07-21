@@ -45,7 +45,7 @@ def _safe_error(exc: Exception) -> str:
     Raw exception text can contain file paths, model internals, or upstream
     error bodies, so it is logged server-side but never surfaced to the API.
     """
-    from subprocess import SubprocessError
+    from subprocess import SubprocessError, TimeoutExpired
 
     from httpx import HTTPError
 
@@ -53,6 +53,8 @@ def _safe_error(exc: Exception) -> str:
         return "This file could not be read as audio. Please upload a valid recording."
     if isinstance(exc, documents.DocumentExtractionError):
         return str(exc)
+    if isinstance(exc, TimeoutExpired):
+        return "Media processing timed out. Please try again or upload a shorter recording."
     if isinstance(exc, SubprocessError):
         return "The recording could not be transcribed. It may be corrupt or unsupported."
     if isinstance(exc, HTTPError):
@@ -63,6 +65,24 @@ def _safe_error(exc: Exception) -> str:
 def mark_error(mathom_id: int, exc: Exception) -> None:
     """Record a failed pipeline run as a calm, user-facing error."""
     _set_status(mathom_id, "error", _safe_error(exc))
+
+
+def mark_visual_error(mathom_id: int, exc: Exception) -> None:
+    """Record a failed standalone visual-analysis run without failing the recording.
+
+    Visual analysis is optional and can be re-run after a recording is already
+    ready.  Treating its terminal failure as a transcription failure leaves the
+    visual status at ``processing`` and can overwrite a usable recording.
+    """
+    with get_session_factory()() as session:
+        mathom = session.get(Mathom, mathom_id)
+        if mathom is None:
+            return
+        mathom.vision_status = "error"
+        mathom.vision_error_message = (
+            "Visual analysis could not be completed. You can try again."
+        )
+        session.commit()
 
 
 def recover_interrupted_jobs() -> int:

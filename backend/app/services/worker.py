@@ -86,8 +86,14 @@ class Worker:
             with get_session_factory()() as session:
                 outcome = jobs.retry_or_fail(session, job_id, safe)
             if outcome == "error":
-                # Out of retries: surface the failure on the Mathom itself.
-                pipeline.mark_error(mathom_id, exc)
+                # Visual analysis is optional and may run after a recording is
+                # ready, so its failure belongs to the visual status rather
+                # than replacing the recording's successful pipeline status.
+                if kind == "visual_analysis":
+                    pipeline.mark_visual_error(mathom_id, exc)
+                else:
+                    # Out of retries: surface the failure on the Mathom itself.
+                    pipeline.mark_error(mathom_id, exc)
             return True
 
         with get_session_factory()() as session:
