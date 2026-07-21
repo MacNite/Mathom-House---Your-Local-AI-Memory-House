@@ -36,6 +36,7 @@ export default function Library() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const refresh = useCallback(
@@ -112,6 +113,21 @@ export default function Library() {
     { key: 'archived', label: t('library.shelf.archived') },
   ];
 
+  const removeMathom = async (mathom: MathomListItem) => {
+    if (!window.confirm(t('detail.confirmDelete'))) return;
+    setDeletingId(mathom.id);
+    try {
+      await api.deleteMathom(mathom.id);
+      setMathoms((current) => current.filter((item) => item.id !== mathom.id));
+      setHits((current) => current?.filter((hit) => hit.mathom.id !== mathom.id) ?? null);
+      toast.success(t('detail.deleted'));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('settings.saveFailed'));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-parchment-300 pb-4">
@@ -171,7 +187,11 @@ export default function Library() {
           </p>
           {hits.map((hit) => (
             <div key={hit.mathom.id}>
-              <MathomCard mathom={hit.mathom} />
+              <MathomCard
+                mathom={hit.mathom}
+                onDelete={removeMathom}
+                deleting={deletingId === hit.mathom.id}
+              />
               <p className="mt-1 px-5 text-sm text-ink-500">{renderSnippet(hit.snippet)}</p>
             </div>
           ))}
@@ -197,7 +217,12 @@ export default function Library() {
       ) : (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {mathoms.map((mathom) => (
-            <MathomCard key={mathom.id} mathom={mathom} />
+            <MathomCard
+              key={mathom.id}
+              mathom={mathom}
+              onDelete={removeMathom}
+              deleting={deletingId === mathom.id}
+            />
           ))}
         </div>
       )}

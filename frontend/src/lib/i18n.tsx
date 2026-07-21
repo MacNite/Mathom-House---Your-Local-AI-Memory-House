@@ -39,6 +39,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'library.results_other': '{count} results for “{query}”',
     'library.emptyTitle': 'The shelves are empty — for now.',
     'library.emptyBody': 'Upload your first recording and Mathom will remember it for you.',
+    'library.deleteMathom': 'Delete “{title}”',
 
     'detail.notFound': 'This Mathom is not on the shelves.',
     'detail.backToLibrary': 'Back to the Library',
@@ -262,6 +263,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'library.results_other': '{count} Ergebnisse für „{query}“',
     'library.emptyTitle': 'Die Regale sind leer — noch.',
     'library.emptyBody': 'Lade deine erste Aufnahme hoch und Mathom bewahrt sie für dich auf.',
+    'library.deleteMathom': '„{title}“ löschen',
 
     'detail.notFound': 'Dieses Mathom steht nicht im Regal.',
     'detail.backToLibrary': 'Zurück zur Bibliothek',
@@ -485,6 +487,7 @@ const translations: Record<Lang, Record<string, string>> = {
     'library.results_other': '{count} resultados para «{query}»',
     'library.emptyTitle': 'Los estantes están vacíos — por ahora.',
     'library.emptyBody': 'Sube tu primera grabación y Mathom la recordará por ti.',
+    'library.deleteMathom': 'Eliminar «{title}»',
 
     'detail.notFound': 'Este Mathom no está en los estantes.',
     'detail.backToLibrary': 'Volver a la Biblioteca',
