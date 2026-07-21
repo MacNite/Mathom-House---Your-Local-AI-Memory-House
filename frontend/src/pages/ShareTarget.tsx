@@ -11,7 +11,7 @@ type State =
   | { kind: 'empty' };
 
 // Landing page for the Android Share Sheet. The service worker has already
-// stashed the shared audio file in Cache Storage and redirected here; we read
+// stashed the shared file in Cache Storage and redirected here; we read
 // it back and open the upload dialog pre-filled with it.
 export default function ShareTarget() {
   const { t } = useI18n();

@@ -20,6 +20,16 @@ interface Props {
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+const DOCUMENT_EXTENSIONS = ['.txt', '.md', '.pdf', '.docx'];
+
+function isDocument(file: File): boolean {
+  return file.type === 'application/pdf'
+    || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    || file.type === 'text/plain'
+    || file.type === 'text/markdown'
+    || DOCUMENT_EXTENSIONS.some((extension) => file.name.toLowerCase().endsWith(extension));
+}
+
 export default function UploadDialog({
   open,
   onClose,
@@ -49,9 +59,14 @@ export default function UploadDialog({
       api.listTemplates(lang).then(setTemplates).catch(() => setTemplates([]));
       setError('');
       setTitle(sharedTitle);
-      if (sharedText) { setSource('text'); setText(sharedText); }
+      if (sharedText) {
+        setSource('text');
+        setText(sharedText);
+      } else if (sharedFile) {
+        setSource(isDocument(sharedFile) ? 'document' : 'media');
+      }
     }
-  }, [lang, open, sharedText, sharedTitle]);
+  }, [lang, open, sharedFile, sharedText, sharedTitle]);
 
   // Accessible-dialog behaviour: trap focus, restore it on close, close on
   // Escape, and move focus into the dialog when it opens.

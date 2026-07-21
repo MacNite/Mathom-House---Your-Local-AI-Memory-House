@@ -2,30 +2,32 @@
 
 Mathom's frontend is an installable Progressive Web App (PWA). Once installed
 on an Android device it registers as a destination in the system **Share
-Sheet**, so you can send a voice message straight from another app (WhatsApp,
-Telegram, Signal, a web-meeting download, your recorder, or a file manager) into
-your own mathom.
+Sheet**, so you can send a voice message or supported document straight from
+another app (WhatsApp, Telegram, Signal, a web-meeting download, your recorder,
+or a file manager) into your own mathom.
 
 ```
 WhatsApp → Share → Mathom → title / template → Upload → Transcribe → Summarize
 ```
 
-Everything stays local: the shared audio moves from your device to your own
+Everything stays local: the shared file moves from your device to your own
 Mathom server and nowhere else. No cloud services are involved.
 
 ## How it works
 
 - **`frontend/public/manifest.webmanifest`** declares the app (name, icons,
   theme) and a [`share_target`](https://developer.mozilla.org/en-US/docs/Web/Manifest/share_target)
-  that accepts supported audio/video files and text via an HTTP `POST` to `/share-target`.
+  that accepts supported audio/video files, PDF, DOCX, TXT, Markdown, and text
+  via an HTTP `POST` to `/share-target`.
 - **`frontend/public/sw.js`** is a service worker whose only jobs are to make
   the app installable and to receive the share. A web page cannot read a
   `POST`ed file directly, so the worker intercepts the request, stashes the
   file in Cache Storage, and redirects (`303`) to the `/share-target` route.
 - **`frontend/src/pages/ShareTarget.tsx`** reads the stashed file back from
   Cache Storage and opens the normal upload dialog pre-filled with it. From
-  there the user confirms the source. Text-only shares become text Mathoms;
-  file-plus-text shares keep text as a suggested title and never merge it into a transcript.
+  there the user confirms the source. Shared documents use Mathom's document
+  import path, while text-only shares become text Mathoms; file-plus-text shares
+  keep text as a suggested title and never merge it into a transcript.
 
 ## Why PWA instead of a Play Store app
 
@@ -40,7 +42,8 @@ the recommended mobile installation method.
 1. Open Mathom in Chrome (or another Chromium browser) on your phone.
 2. Use the browser menu → **Install app** / **Add to Home screen**.
 3. Mathom now appears in the Android Share Sheet. In WhatsApp, Telegram, a
-   recorder, or a file manager, choose **Share** → **Mathom**. Pick a title and
+   recorder, or a file manager, choose **Share** → **Mathom**. PDFs and other
+   supported documents appear as shareable options too. Pick a title and
    summary template (for example TL;DR, action items, meeting minutes, or
    calendar events), then tap **Upload**.
 
