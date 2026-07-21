@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Mathom appears in the Android Share Sheet for every supported format.** The
+  `share_target` manifest matched by MIME type but was missing `video/webm`
+  (so `.webm` recordings never offered Mathom), `application/ogg` (the MIME many
+  apps use for shared `.ogg`/`.opus` voice notes), and `text/x-markdown`. All
+  accepted media and document formats now surface Mathom when shared.
 - **Streaming summaries and chat render again.** Server-sent tokens are now
   emitted as JSON (`json.dumps`) instead of Python `repr()`, which the browser's
   `JSON.parse` rejected — the live typewriter view previously errored on the
