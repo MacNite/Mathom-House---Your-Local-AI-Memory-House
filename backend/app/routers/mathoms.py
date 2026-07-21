@@ -360,7 +360,9 @@ def rerun_visual_analysis(
     mathom.vision_error_message = None
     mathom.vision_model = settings.vision_model
     db.commit()
-    jobs.enqueue(db, mathom.id, "general-summary", kind="visual_analysis")
+    # A single attempt: a vision timeout would only repeat on retry, and each
+    # attempt keeps the badge at "Analysing" for the full per-batch budget.
+    jobs.enqueue(db, mathom.id, "general-summary", kind="visual_analysis", max_attempts=1)
     worker.notify()
     db.refresh(mathom)
     return mathom

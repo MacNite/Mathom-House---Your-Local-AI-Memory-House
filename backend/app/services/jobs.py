@@ -32,9 +32,24 @@ def _aware(value: datetime) -> datetime:
     return value if value.tzinfo else value.replace(tzinfo=UTC)
 
 
-def enqueue(session: Session, mathom_id: int, template_slug: str, kind: str = "process") -> Job:
-    """Add a job for a Mathom. Commits within the caller's session."""
+def enqueue(
+    session: Session,
+    mathom_id: int,
+    template_slug: str,
+    kind: str = "process",
+    max_attempts: int | None = None,
+) -> Job:
+    """Add a job for a Mathom. Commits within the caller's session.
+
+    ``max_attempts`` overrides the model default. Retrying is worthwhile for
+    transient Ollama blips, but a slow-inference timeout repeats the same long
+    wait on every attempt, so callers that would only re-hit a timeout (e.g.
+    standalone visual analysis) pass 1 to fail fast instead of pinning the
+    single worker — and the recording's status — for the full retry budget.
+    """
     job = Job(mathom_id=mathom_id, template_slug=template_slug, kind=kind, status="queued")
+    if max_attempts is not None:
+        job.max_attempts = max_attempts
     session.add(job)
     session.commit()
     session.refresh(job)

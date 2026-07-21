@@ -66,6 +66,44 @@ def test_retry_backs_off_then_fails(client: TestClient) -> None:
         assert session.get(Job, job_id).status == "error"
 
 
+def test_enqueue_honors_max_attempts_override(client: TestClient) -> None:
+    mathom_id = _make_mathom()
+    with get_session_factory()() as session:
+        default_job = jobs.enqueue(session, mathom_id, "general-summary")
+        assert default_job.max_attempts == 3
+        capped_job = jobs.enqueue(
+            session, mathom_id, "general-summary", kind="visual_analysis", max_attempts=1
+        )
+        assert capped_job.max_attempts == 1
+
+
+def test_visual_analysis_rerun_is_single_attempt(client: TestClient, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    # A standalone re-run must not retry: a vision timeout would only repeat the
+    # long wait and keep the badge stuck at "Analysing" for the whole budget.
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "vision_enabled", True)
+    mathom_id = _make_mathom()
+    with get_session_factory()() as session:
+        mathom = session.get(Mathom, mathom_id)
+        assert mathom is not None
+        mathom.status = "ready"
+        mathom.has_video_stream = True
+        mathom.source_path = "/data/sources/j.mp4"
+        session.commit()
+
+    response = client.post(f"/api/mathoms/{mathom_id}/visual-analysis", json={})
+    assert response.status_code == 202, response.text
+
+    with get_session_factory()() as session:
+        job = (
+            session.query(Job)
+            .filter(Job.mathom_id == mathom_id, Job.kind == "visual_analysis")
+            .one()
+        )
+        assert job.max_attempts == 1
+
+
 def test_recover_stuck_requeues_running_jobs(client: TestClient) -> None:
     mathom_id = _make_mathom()
     with get_session_factory()() as session:

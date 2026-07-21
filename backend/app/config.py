@@ -24,7 +24,11 @@ class Settings(BaseSettings):
     vision_sample_interval_seconds: float = Field(default=30, ge=1, le=3600)
     vision_frame_max_width: int = Field(default=1024, ge=128, le=4096)
     vision_jpeg_quality: int = Field(default=85, ge=30, le=95)
-    vision_timeout_seconds: float = Field(default=300, ge=5, le=1800)
+    # Per-request (per-batch) read budget for the vision model. A batch bundles
+    # several frames into one call and vision inference is slower than text, so
+    # the default is generous — the earlier 300s routinely timed out mid-batch
+    # on CPU/modest GPUs. Raise MATHOM_VISION_TIMEOUT_SECONDS further if needed.
+    vision_timeout_seconds: float = Field(default=600, ge=5, le=1800)
     vision_max_observation_chars: int = Field(default=50000, ge=1000, le=500000)
     # Bound the number of recordings waiting for the serial processing worker.
     # This is admission control, not a per-client rate limit: it keeps a burst
