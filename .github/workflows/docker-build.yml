@@ -15,7 +15,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: docker/setup-buildx-action@v3
+      # The builder image is pulled from Docker Hub. Retry bootstrapping it to
+      # tolerate transient registry timeouts on GitHub-hosted runners.
+      - name: Set up Docker Buildx
+        id: buildx
+        continue-on-error: true
+        uses: docker/setup-buildx-action@v3
+        with:
+          name: mathom-builder
+
+      - name: Retry Docker Buildx bootstrap
+        if: steps.buildx.outcome == 'failure'
+        shell: bash
+        run: |
+          set -uo pipefail
+          docker buildx rm mathom-builder >/dev/null 2>&1 || true
+          for attempt in 1 2 3; do
+            if docker buildx create --name mathom-builder --driver docker-container --use \
+              && docker buildx inspect mathom-builder --bootstrap; then
+              exit 0
+            fi
+            docker buildx rm mathom-builder >/dev/null 2>&1 || true
+            if [ "$attempt" -eq 3 ]; then
+              exit 1
+            fi
+            sleep $((attempt * 10))
+          done
 
       - name: Log in to GHCR
         if: github.event_name == 'push'
