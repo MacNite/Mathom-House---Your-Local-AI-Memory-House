@@ -48,9 +48,7 @@ def test_upload_without_speaker_is_null(uploaded_mathom: dict) -> None:
 
 
 def test_update_speaker(client: TestClient, uploaded_mathom: dict) -> None:
-    response = client.patch(
-        f"/api/mathoms/{uploaded_mathom['id']}", json={"speaker": "Mum and me"}
-    )
+    response = client.patch(f"/api/mathoms/{uploaded_mathom['id']}", json={"speaker": "Mum and me"})
     assert response.status_code == 200
     assert response.json()["speaker"] == "Mum and me"
 
