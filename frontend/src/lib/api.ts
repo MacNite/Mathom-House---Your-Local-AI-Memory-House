@@ -85,23 +85,25 @@ export const api = {
     templateSlug: string,
     templateLanguage: string,
     analyzeVisuals = false,
+    speaker = "",
   ): Promise<Mathom> {
     const form = new FormData();
     form.append("file", file);
     form.append("title", title);
+    form.append("speaker", speaker);
     form.append("template_slug", templateSlug);
     form.append("template_language", templateLanguage);
     form.append("analyze_visuals", String(analyzeVisuals));
     return request("/mathoms", { method: "POST", body: form });
   },
 
-  createTextMathom(text: string, title: string, templateSlug: string, templateLanguage: string): Promise<Mathom> {
-    return request('/mathoms/text', json('POST', { text, title, template_slug: templateSlug, template_language: templateLanguage }));
+  createTextMathom(text: string, title: string, templateSlug: string, templateLanguage: string, speaker = ""): Promise<Mathom> {
+    return request('/mathoms/text', json('POST', { text, title, speaker, template_slug: templateSlug, template_language: templateLanguage }));
   },
 
-  uploadDocument(file: File, title: string, templateSlug: string, templateLanguage: string): Promise<Mathom> {
+  uploadDocument(file: File, title: string, templateSlug: string, templateLanguage: string, speaker = ""): Promise<Mathom> {
     const form = new FormData();
-    form.append('file', file); form.append('title', title); form.append('template_slug', templateSlug); form.append('template_language', templateLanguage);
+    form.append('file', file); form.append('title', title); form.append('speaker', speaker); form.append('template_slug', templateSlug); form.append('template_language', templateLanguage);
     return request('/mathoms/documents', { method: 'POST', body: form });
   },
 

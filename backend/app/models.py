@@ -70,6 +70,9 @@ class Mathom(Base):
         ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True
     )
     title: Mapped[str] = mapped_column(String(300), default="Untitled Mathom")
+    # Who is speaking / the main speaker, as noted by the uploader. Optional and
+    # purely descriptive: it is not derived from diarization.
+    speaker: Mapped[str | None] = mapped_column(String(200), nullable=True)
     original_filename: Mapped[str] = mapped_column(String(500), default="")
     audio_path: Mapped[str] = mapped_column(String(1000), default="")
     # `audio_path` is retained for compatibility. Source files for documents

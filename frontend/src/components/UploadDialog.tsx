@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 
 import { api } from '../lib/api';
 import { useI18n } from '../lib/i18n';
+import { detectSourceApp } from '../lib/sourceApp';
 import { useToast } from '../lib/toast';
 import type { PromptTemplate } from '../lib/types';
 
@@ -42,6 +43,7 @@ export default function UploadDialog({
   const toast = useToast();
   const [templates, setTemplates] = useState<PromptTemplate[]>([]);
   const [title, setTitle] = useState('');
+  const [speaker, setSpeaker] = useState('');
   const [templateSlug, setTemplateSlug] = useState('general-summary');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -49,6 +51,7 @@ export default function UploadDialog({
   const [text, setText] = useState('');
   const [analyzeVisuals, setAnalyzeVisuals] = useState(false);
   const [videoSelected, setVideoSelected] = useState(false);
+  const [pickedName, setPickedName] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLFormElement>(null);
   const titleId = useId();
@@ -78,6 +81,8 @@ export default function UploadDialog({
           setError(t('upload.templatesFailed'));
         });
       setTitle(sharedTitle);
+      setSpeaker('');
+      setPickedName('');
       if (sharedText) {
         setSource('text');
         setText(sharedText);
@@ -140,10 +145,11 @@ export default function UploadDialog({
     setBusy(true);
     setError('');
     try {
-      if (source === 'text') await api.createTextMathom(text, title, templateSlug, lang);
-      else if (source === 'document' && file) await api.uploadDocument(file, title, templateSlug, lang);
-      else if (file) await api.uploadMathom(file, title, templateSlug, lang, analyzeVisuals);
+      if (source === 'text') await api.createTextMathom(text, title, templateSlug, lang, speaker);
+      else if (source === 'document' && file) await api.uploadDocument(file, title, templateSlug, lang, speaker);
+      else if (file) await api.uploadMathom(file, title, templateSlug, lang, analyzeVisuals, speaker);
       setTitle('');
+      setSpeaker('');
       if (fileRef.current) fileRef.current.value = '';
       toast.success(t('upload.success'));
       onUploaded();
@@ -154,6 +160,10 @@ export default function UploadDialog({
       setBusy(false);
     }
   };
+
+  // Best-effort hint at the app the recording came from, inferred from the
+  // filename (the platform never tells us directly). Null hides the badge.
+  const sourceApp = detectSourceApp(sharedFile?.name ?? pickedName);
 
   return (
     <div
@@ -197,6 +207,11 @@ export default function UploadDialog({
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-moss-200 bg-moss-200/40 px-3 py-2 text-sm text-ink-700">
             <span aria-hidden>🎧</span>
             <span className="truncate">{sharedFile.name}</span>
+            {sourceApp && (
+              <span className="ml-auto shrink-0 rounded-full bg-parchment-200 px-2 py-0.5 text-xs text-ink-700">
+                {t('upload.sourceApp')}: {sourceApp}
+              </span>
+            )}
           </div>
         ) : source !== 'text' ? (
           <label className="mt-4 block text-sm text-ink-700">
@@ -210,11 +225,11 @@ export default function UploadDialog({
                   : 'audio/*,video/mp4,video/webm,.m4a,.opus'
               }
               className="input mt-1"
-              onChange={(event) =>
-                setVideoSelected(
-                  Boolean(event.currentTarget.files?.[0]?.type.startsWith('video/')),
-                )
-              }
+              onChange={(event) => {
+                const picked = event.currentTarget.files?.[0];
+                setVideoSelected(Boolean(picked?.type.startsWith('video/')));
+                setPickedName(picked?.name ?? '');
+              }}
             />
           </label>
         ) : (
@@ -247,6 +262,15 @@ export default function UploadDialog({
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder={t('upload.titlePlaceholder')}
+            className="input mt-1"
+          />
+        </label>
+        <label className="mt-3 block text-sm text-ink-700">
+          {t('upload.speakerLabel')} <span className="text-ink-400">{t('upload.optional')}</span>
+          <input
+            value={speaker}
+            onChange={(event) => setSpeaker(event.target.value)}
+            placeholder={t('upload.speakerPlaceholder')}
             className="input mt-1"
           />
         </label>

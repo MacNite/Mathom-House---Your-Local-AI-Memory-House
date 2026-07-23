@@ -32,6 +32,27 @@ def test_upload_rejects_empty_file(client: TestClient) -> None:
     assert response.status_code == 400
 
 
+def test_upload_stores_speaker(client: TestClient) -> None:
+    response = client.post(
+        "/api/mathoms",
+        files={"file": ("note.mp3", io.BytesIO(b"fake-audio-bytes"), "audio/mpeg")},
+        data={"title": "Voice note", "speaker": "  Max  "},
+    )
+    assert response.status_code == 201, response.text
+    # The speaker is trimmed and returned on the detail payload.
+    assert response.json()["speaker"] == "Max"
+
+
+def test_upload_without_speaker_is_null(uploaded_mathom: dict) -> None:
+    assert uploaded_mathom["speaker"] is None
+
+
+def test_update_speaker(client: TestClient, uploaded_mathom: dict) -> None:
+    response = client.patch(f"/api/mathoms/{uploaded_mathom['id']}", json={"speaker": "Mum and me"})
+    assert response.status_code == 200
+    assert response.json()["speaker"] == "Mum and me"
+
+
 def test_list_and_filters(client: TestClient, uploaded_mathom: dict) -> None:
     listed = client.get("/api/mathoms").json()
     assert len(listed) == 1
