@@ -35,6 +35,7 @@ export interface MathomListItem {
   duration_seconds: number | null;
   language: string | null;
   source_type?: SourceType;
+  source_app?: string | null;
   has_audio_stream?: boolean;
   has_video_stream?: boolean;
   vision_requested?: boolean;

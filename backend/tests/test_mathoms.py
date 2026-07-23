@@ -47,6 +47,38 @@ def test_upload_without_speaker_is_null(uploaded_mathom: dict) -> None:
     assert uploaded_mathom["speaker"] is None
 
 
+def test_upload_detects_and_stores_source_app(client: TestClient) -> None:
+    response = client.post(
+        "/api/mathoms",
+        files={"file": ("PTT-20260722-WA0004.mp3", io.BytesIO(b"fake-audio-bytes"), "audio/mpeg")},
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["source_app"] == "WhatsApp"
+
+
+def test_upload_without_recognisable_source_is_null(uploaded_mathom: dict) -> None:
+    # The fixture uploads "greeting.mp3", which matches no messenger pattern.
+    assert uploaded_mathom["source_app"] is None
+
+
+def test_filter_and_list_sources_by_source_app(client: TestClient) -> None:
+    for name in ("PTT-20260722-WA0004.mp3", "signal-2024-01-01-120000.mp3", "plain-note.mp3"):
+        assert (
+            client.post(
+                "/api/mathoms",
+                files={"file": (name, io.BytesIO(b"fake-audio-bytes"), "audio/mpeg")},
+            ).status_code
+            == 201
+        )
+
+    # The distinct-sources endpoint omits the unrecognised recording.
+    assert client.get("/api/mathoms/sources").json() == ["Signal", "WhatsApp"]
+
+    whatsapp = client.get("/api/mathoms", params={"source_app": "WhatsApp"}).json()
+    assert [m["source_app"] for m in whatsapp] == ["WhatsApp"]
+    assert client.get("/api/mathoms", params={"source_app": "Telegram"}).json() == []
+
+
 def test_update_speaker(client: TestClient, uploaded_mathom: dict) -> None:
     response = client.patch(f"/api/mathoms/{uploaded_mathom['id']}", json={"speaker": "Mum and me"})
     assert response.status_code == 200

@@ -29,6 +29,8 @@ export default function Library() {
   const [mathoms, setMathoms] = useState<MathomListItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [sources, setSources] = useState<string[]>([]);
+  const [activeSource, setActiveSource] = useState<string | null>(null);
   const [shelf, setShelf] = useState<Shelf>('all');
   const [query, setQuery] = useState('');
   const [hits, setHits] = useState<SearchHit[] | null>(null);
@@ -47,6 +49,7 @@ export default function Library() {
           favorite: shelf === 'favorites' ? true : undefined,
           archived: shelf === 'archived',
           tag: activeTag ?? undefined,
+          sourceApp: activeSource ?? undefined,
         })
         .then((list) => {
           setMathoms(list);
@@ -55,8 +58,20 @@ export default function Library() {
         .catch(() => setLoadError(true))
         .finally(() => setLoading(false));
       api.listTags().then(setTags).catch(() => setTags([]));
+      // The set of source apps grows as recordings are imported, so refresh it
+      // alongside the list. A selected source that no longer exists is cleared
+      // so the filter can't get stuck on an empty result.
+      api
+        .listSources()
+        .then((available) => {
+          setSources(available);
+          setActiveSource((current) =>
+            current && !available.includes(current) ? null : current,
+          );
+        })
+        .catch(() => setSources([]));
     },
-    [shelf, activeTag],
+    [shelf, activeTag, activeSource],
   );
 
   useEffect(() => refresh(), [refresh]);
@@ -175,6 +190,25 @@ export default function Library() {
               }`}
             >
               #{tag.name}
+            </button>
+          ))}
+          {sources.length > 0 && (
+            <span className="ml-1 text-[11px] uppercase tracking-wide text-ink-400">
+              {t('library.source')}
+            </span>
+          )}
+          {sources.map((source) => (
+            <button
+              key={source}
+              onClick={() => setActiveSource(activeSource === source ? null : source)}
+              aria-pressed={activeSource === source}
+              className={`rounded-sm border px-3 py-1 text-xs uppercase tracking-wide ${
+                activeSource === source
+                  ? 'border-hearth-600 bg-hearth-600 text-parchment-50'
+                  : 'border-hearth-400 text-hearth-600 hover:bg-hearth-400 hover:text-parchment-50'
+              }`}
+            >
+              {source}
             </button>
           ))}
         </div>

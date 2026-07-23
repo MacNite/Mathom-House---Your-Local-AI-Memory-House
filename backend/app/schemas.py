@@ -42,6 +42,7 @@ class MathomListItem(ORMModel):
     duration_seconds: float | None
     language: str | None
     source_type: str
+    source_app: str | None = None
     has_audio_stream: bool = True
     has_video_stream: bool = False
     vision_requested: bool = False
