@@ -60,6 +60,21 @@ describe('UploadDialog summary style', () => {
     expect(api.uploadMathom.mock.calls[0][2]).toBe('tldr');
   });
 
+  it('sends the speaker the user entered', async () => {
+    api.listTemplates.mockResolvedValue(templates);
+    api.uploadMathom.mockResolvedValue({});
+    renderDialog();
+    await screen.findByRole('option', { name: 'TL;DR' });
+
+    pickFile();
+    fireEvent.change(screen.getByLabelText(/speaker/i), { target: { value: 'Max' } });
+    fireEvent.click(screen.getByRole('button', { name: /^upload$/i }));
+
+    await waitFor(() => expect(api.uploadMathom).toHaveBeenCalled());
+    // speaker is the final positional argument to uploadMathom.
+    expect(api.uploadMathom.mock.calls[0][5]).toBe('Max');
+  });
+
   it('does not silently upload with the default when styles failed to load', async () => {
     api.listTemplates.mockRejectedValue(new Error('network down'));
     api.uploadMathom.mockResolvedValue({});

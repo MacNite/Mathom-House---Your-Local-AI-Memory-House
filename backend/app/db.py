@@ -93,6 +93,7 @@ def init_db(engine: Engine | None = None) -> None:
         _migrate_template_language(conn)
         _migrate_source_fields(conn)
         _migrate_vision_fields(conn)
+        _migrate_speaker(conn)
         _migrate_local_auth(conn)
 
 
@@ -143,6 +144,12 @@ def _migrate_source_fields(conn: object) -> None:
         if name not in _column_names(conn, "mathoms"):
             conn.execute(text(f"ALTER TABLE mathoms ADD COLUMN {name} {definition}"))  # type: ignore[attr-defined]
     conn.execute(text("CREATE INDEX IF NOT EXISTS ix_mathoms_source_type ON mathoms(source_type)"))  # type: ignore[attr-defined]
+
+
+def _migrate_speaker(conn: object) -> None:
+    """Add the optional speaker note without rewriting existing archives."""
+    if "speaker" not in _column_names(conn, "mathoms"):
+        conn.execute(text("ALTER TABLE mathoms ADD COLUMN speaker VARCHAR(200)"))  # type: ignore[attr-defined]
 
 
 def _migrate_vision_fields(conn: object) -> None:

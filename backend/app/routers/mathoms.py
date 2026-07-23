@@ -76,6 +76,7 @@ def list_mathoms(
 async def upload_mathom(
     file: UploadFile,
     title: str = Form(default=""),
+    speaker: str = Form(default=""),
     template_slug: str = Form(default="general-summary"),
     template_language: str = Form(default="en", pattern=r"^(en|de|es)$"),
     analyze_visuals: bool = Form(default=False),
@@ -153,6 +154,7 @@ async def upload_mathom(
     source_type = "video" if has_video else "audio"
     mathom = Mathom(
         title=title.strip() or Path(original_name).stem or "Untitled Mathom",
+        speaker=speaker.strip()[:200] or None,
         original_filename=original_name[:500],
         audio_path=str(target),
         source_path=str(target) if has_video else "",
@@ -192,6 +194,7 @@ def create_text_mathom(
         )
     mathom = Mathom(
         title=payload.title.strip() or "Untitled Mathom",
+        speaker=(payload.speaker or "").strip()[:200] or None,
         transcript=payload.text,
         source_type="text",
         # Text and document sources have no media; without this the model
@@ -216,6 +219,7 @@ def create_text_mathom(
 async def upload_document(
     file: UploadFile,
     title: str = Form(default=""),
+    speaker: str = Form(default=""),
     template_slug: str = Form(default="general-summary"),
     template_language: str = Form(default="en", pattern=r"^(en|de|es)$"),
     db: Session = Depends(get_db),
@@ -252,6 +256,7 @@ async def upload_document(
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
     mathom = Mathom(
         title=title.strip() or "Untitled Mathom",
+        speaker=speaker.strip()[:200] or None,
         original_filename=Path(original_name).name[:500],
         source_type="document",
         source_path=str(target),

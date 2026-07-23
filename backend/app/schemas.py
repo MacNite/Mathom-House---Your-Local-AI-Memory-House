@@ -60,6 +60,7 @@ class TranscriptSegment(BaseModel):
 
 
 class MathomOut(MathomListItem):
+    speaker: str | None = None
     original_filename: str
     error_message: str | None
     transcript: str | None
@@ -79,6 +80,7 @@ class MathomOut(MathomListItem):
 
 class MathomUpdate(BaseModel):
     title: str | None = Field(default=None, max_length=300)
+    speaker: str | None = Field(default=None, max_length=200)
     favorite: bool | None = None
     archived: bool | None = None
     transcript: str | None = None
@@ -87,6 +89,7 @@ class MathomUpdate(BaseModel):
 class TextMathomCreate(BaseModel):
     text: str = Field(min_length=1)
     title: str = Field(default="", max_length=300)
+    speaker: str | None = Field(default=None, max_length=200)
     template_slug: str = "general-summary"
     template_language: str = Field(default="en", pattern=r"^(en|de|es)$")
 

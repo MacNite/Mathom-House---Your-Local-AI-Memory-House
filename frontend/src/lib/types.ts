@@ -53,6 +53,7 @@ export interface TranscriptSegment {
 }
 
 export interface Mathom extends MathomListItem {
+  speaker?: string | null;
   original_filename: string;
   error_message: string | null;
   transcript: string | null;

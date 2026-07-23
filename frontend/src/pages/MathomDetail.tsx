@@ -301,6 +301,7 @@ export default function MathomDetail() {
           {mathom.duration_seconds != null &&
             ` · ${formatDuration(mathom.duration_seconds, t)}`}
           {mathom.language && ` · ${mathom.language}`}
+          {mathom.speaker && ` · ${t("detail.speakerPrefix")}: ${mathom.speaker}`}
           {mathom.original_filename && ` · ${mathom.original_filename}`}
         </p>
         {mathom.status === "error" && (
