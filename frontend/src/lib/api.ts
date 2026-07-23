@@ -61,6 +61,7 @@ export interface MathomFilters {
   favorite?: boolean;
   archived?: boolean;
   tag?: string;
+  sourceApp?: string;
 }
 
 export const api = {
@@ -71,8 +72,13 @@ export const api = {
     if (filters.archived !== undefined)
       params.set("archived", String(filters.archived));
     if (filters.tag) params.set("tag", filters.tag);
+    if (filters.sourceApp) params.set("source_app", filters.sourceApp);
     const query = params.toString();
     return request(`/mathoms${query ? `?${query}` : ""}`);
+  },
+
+  listSources(): Promise<string[]> {
+    return request("/mathoms/sources");
   },
 
   getMathom(id: number): Promise<Mathom> {

@@ -94,6 +94,7 @@ def init_db(engine: Engine | None = None) -> None:
         _migrate_source_fields(conn)
         _migrate_vision_fields(conn)
         _migrate_speaker(conn)
+        _migrate_source_app(conn)
         _migrate_local_auth(conn)
 
 
@@ -150,6 +151,35 @@ def _migrate_speaker(conn: object) -> None:
     """Add the optional speaker note without rewriting existing archives."""
     if "speaker" not in _column_names(conn, "mathoms"):
         conn.execute(text("ALTER TABLE mathoms ADD COLUMN speaker VARCHAR(200)"))  # type: ignore[attr-defined]
+
+
+def _migrate_source_app(conn: object) -> None:
+    """Add the origin-app column and backfill it from existing filenames.
+
+    The column is additive; the backfill only fills rows still NULL, so existing
+    WhatsApp/Telegram/Signal recordings become filterable by origin without any
+    destructive change.
+    """
+    from app.services.source_app import detect_source_app
+
+    if "source_app" not in _column_names(conn, "mathoms"):
+        conn.execute(text("ALTER TABLE mathoms ADD COLUMN source_app VARCHAR(50)"))  # type: ignore[attr-defined]
+    conn.execute(  # type: ignore[attr-defined]
+        text("CREATE INDEX IF NOT EXISTS ix_mathoms_source_app ON mathoms(source_app)")
+    )
+    rows = conn.execute(  # type: ignore[attr-defined]
+        text(
+            "SELECT id, original_filename FROM mathoms "
+            "WHERE source_app IS NULL AND original_filename != ''"
+        )
+    ).all()
+    for row_id, filename in rows:
+        app_name = detect_source_app(filename)
+        if app_name is not None:
+            conn.execute(  # type: ignore[attr-defined]
+                text("UPDATE mathoms SET source_app = :app WHERE id = :id"),
+                {"app": app_name, "id": row_id},
+            )
 
 
 def _migrate_vision_fields(conn: object) -> None:

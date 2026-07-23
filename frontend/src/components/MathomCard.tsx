@@ -31,6 +31,7 @@ export default function MathomCard({ mathom, onDelete, deleting = false }: Matho
           {formatDate(mathom.created_at, lang)}
           {mathom.duration_seconds != null && ` · ${formatDuration(mathom.duration_seconds, t)}`}
           {mathom.language && ` · ${mathom.language}`}
+          {mathom.source_app && ` · ${mathom.source_app}`}
         </p>
         {mathom.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">

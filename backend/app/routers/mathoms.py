@@ -35,6 +35,7 @@ from app.schemas import (
     VisualAnalysisRequest,
 )
 from app.services import export, jobs, pipeline, transcription, vision
+from app.services.source_app import detect_source_app
 from app.services.worker import worker
 
 router = APIRouter(prefix="/mathoms", tags=["mathoms"])
@@ -58,6 +59,7 @@ def list_mathoms(
     archived: bool = False,
     tag: str | None = None,
     status: str | None = None,
+    source_app: str | None = None,
     limit: int = 100,
     offset: int = 0,
 ) -> list[Mathom]:
@@ -66,10 +68,28 @@ def list_mathoms(
         query = query.where(Mathom.favorite == favorite)
     if status is not None:
         query = query.where(Mathom.status == status)
+    if source_app is not None:
+        query = query.where(Mathom.source_app == source_app)
     if tag is not None:
         query = query.join(Mathom.tags).where(Tag.name == tag)
     query = query.order_by(Mathom.created_at.desc()).limit(min(limit, 500)).offset(offset)
     return list(db.execute(query).scalars().unique())
+
+
+@router.get("/sources", response_model=list[str])
+def list_sources(
+    db: Session = Depends(get_db),
+    user: User | None = Depends(current_user),
+) -> list[str]:
+    """Distinct source apps present in the caller's archive, for the Library
+    filter. Ordered alphabetically; NULL (unrecognised) origins are omitted."""
+    query = (
+        select(Mathom.source_app)
+        .where(owned_filter(Mathom, user), Mathom.source_app.is_not(None))
+        .distinct()
+        .order_by(Mathom.source_app)
+    )
+    return [row for row in db.execute(query).scalars() if row]
 
 
 @router.post("", response_model=MathomOut, status_code=201)
@@ -155,6 +175,7 @@ async def upload_mathom(
     mathom = Mathom(
         title=title.strip() or Path(original_name).stem or "Untitled Mathom",
         speaker=speaker.strip()[:200] or None,
+        source_app=detect_source_app(original_name),
         original_filename=original_name[:500],
         audio_path=str(target),
         source_path=str(target) if has_video else "",
@@ -257,6 +278,7 @@ async def upload_document(
     mathom = Mathom(
         title=title.strip() or "Untitled Mathom",
         speaker=speaker.strip()[:200] or None,
+        source_app=detect_source_app(original_name),
         original_filename=Path(original_name).name[:500],
         source_type="document",
         source_path=str(target),
