@@ -4,8 +4,11 @@
 
 Visual analysis is disabled by default. To enable it, set `MATHOM_VISION_ENABLED=true` and install
 a vision-capable model in the existing private Ollama instance, for example `gemma3:4b` or
-`qwen3-vl:4b`; set `MATHOM_VISION_MODEL` accordingly. Mathom checks `/api/show` and does not pull
-models or contact registries. Tune bounded frame, batch, dimension, quality, timeout, and response
+`qwen3-vl:4b`; set `MATHOM_VISION_MODEL` accordingly. Run `make up` after changing `.env`, then
+run `make models`; when visual analysis is enabled it pulls the configured summary and vision
+models. Confirm `/api/health` reports `vision_model_installed: true` and
+`vision_model_has_vision: true` before uploading a video. Mathom checks `/api/show` and does not
+contact registries itself. Tune bounded frame, batch, dimension, quality, timeout, and response
 limits through the documented `MATHOM_VISION_*` variables in `.env.example`.
 
 ## Any Docker host

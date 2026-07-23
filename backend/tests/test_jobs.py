@@ -110,6 +110,36 @@ def test_terminal_visual_failure_does_not_fail_ready_recording(
         assert job.status == "error"
 
 
+def test_terminal_visual_failure_reports_safe_actionable_cause(
+    client: TestClient, monkeypatch
+) -> None:
+    mathom_id = _make_mathom()
+    with get_session_factory()() as session:
+        mathom = session.get(Mathom, mathom_id)
+        assert mathom is not None
+        mathom.status = "ready"
+        mathom.has_video_stream = True
+        job = jobs.enqueue(session, mathom_id, "general-summary", kind="visual_analysis")
+        job.max_attempts = 1
+        session.commit()
+
+    from app.services import vision
+
+    monkeypatch.setattr(
+        pipeline,
+        "run_visual_analysis",
+        lambda mathom_id: (_ for _ in ()).throw(
+            vision.VisionError("The configured local vision model is unavailable.")
+        ),
+    )
+    assert Worker()._drain_one() is True
+
+    with get_session_factory()() as session:
+        mathom = session.get(Mathom, mathom_id)
+        assert mathom is not None
+        assert mathom.vision_error_message == "The configured local vision model is unavailable."
+
+
 def test_queue_position_follows_runnable_order(client: TestClient) -> None:
     first_id = _make_mathom()
     second_id = _make_mathom()

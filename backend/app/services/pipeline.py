@@ -79,8 +79,27 @@ def mark_visual_error(mathom_id: int, exc: Exception) -> None:
         if mathom is None:
             return
         mathom.vision_status = "error"
-        mathom.vision_error_message = "Visual analysis could not be completed. You can try again."
+        mathom.vision_error_message = _safe_visual_error(exc)
         session.commit()
+
+
+def _safe_visual_error(exc: Exception) -> str:
+    """Return an actionable visual-analysis error without exposing internals."""
+    from subprocess import SubprocessError, TimeoutExpired
+
+    from httpx import HTTPError
+
+    if isinstance(exc, vision.VisionError):
+        # VisionError messages are authored by this service and deliberately
+        # contain no upstream response bodies, filesystem paths, or prompts.
+        return str(exc)
+    if isinstance(exc, TimeoutExpired):
+        return "Visual analysis timed out. Try fewer frames or a shorter video."
+    if isinstance(exc, SubprocessError):
+        return "Video frames could not be extracted. The video may be corrupt or unsupported."
+    if isinstance(exc, HTTPError):
+        return "The local vision model could not be reached. Check that Ollama is running."
+    return "Visual analysis could not be completed. See the server logs for details."
 
 
 def recover_interrupted_jobs() -> int:
@@ -177,15 +196,13 @@ def run(mathom_id: int, template_slug: str = "general-summary") -> None:
                     current.status = "summarizing"
                     refresh_fts(session, mathom_id)
                     session.commit()
-        except Exception:
+        except Exception as exc:  # noqa: BLE001 — optional analysis must not stop audio processing
             logger.exception("Visual analysis failed for mathom %s", mathom_id)
             with factory() as session:
                 current = session.get(Mathom, mathom_id)
                 if current is not None:
                     current.vision_status = "error"
-                    current.vision_error_message = (
-                        "Visual analysis could not be completed. You can try again."
-                    )
+                    current.vision_error_message = _safe_visual_error(exc)
                     session.commit()
             if not text:
                 raise
