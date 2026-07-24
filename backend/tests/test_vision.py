@@ -6,6 +6,7 @@ router/health guards that gate the feature.
 """
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -109,6 +110,26 @@ def test_media_streams_raises_on_invalid_json(
     monkeypatch.setattr(vision.subprocess, "run", lambda *a, **k: FakeResult())
     with pytest.raises(vision.VisionError):
         vision.media_streams(Path("clip.mp4"))
+
+
+def test_extract_frames_escapes_comma_in_scale_expression(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The comma in min() must not be parsed as an FFmpeg filter separator."""
+    commands: list[list[str]] = []
+
+    def fake_run(args: list[str], **kwargs: object) -> None:
+        commands.append(args)
+
+    monkeypatch.setattr(vision, "_timestamps", lambda duration: [0.0])
+    monkeypatch.setattr(vision.subprocess, "run", fake_run)
+
+    frames = vision.extract_frames(Path("clip.mp4"), 1)
+    try:
+        args = commands[0]
+        assert args[args.index("-vf") + 1] == "scale=min(1024\\,iw):-2"
+    finally:
+        shutil.rmtree(frames[0][1].parent, ignore_errors=True)
 
 
 def test_visual_analysis_disabled_by_default(client: TestClient, wait_for_status) -> None:  # type: ignore[no-untyped-def]

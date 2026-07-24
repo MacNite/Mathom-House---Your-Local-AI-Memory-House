@@ -126,7 +126,10 @@ def extract_frames(source: Path, duration: float | None) -> list[tuple[float, Pa
                 "-map_metadata",
                 "-1",
                 "-vf",
-                f"scale=min({s.vision_frame_max_width},iw):-2",
+                # A comma separates FFmpeg filters, so it must be escaped
+                # inside min(); otherwise every frame extraction fails with
+                # "No such filter: 'iw)'".
+                f"scale=min({s.vision_frame_max_width}\\,iw):-2",
                 "-q:v",
                 quality,
                 str(output),
